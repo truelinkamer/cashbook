@@ -31,7 +31,7 @@ body.ps #app>*:not(#sheet){display:none!important}@media print{:root,:root[data-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="/config.js"></script>
 <script>
 const CASH={asna:'Asna',thasleena:'Thasleena'},NOTES=[1000,500,200,100,50,20,10,5],COINS=[1,0.5,0.25];
-const OUTK=['Petty Cash','AMWAL','SHAKKEER','NOQODI','NBD','Cash Expense'];
+const OUTK=['Petty Cash','AMWAL','SHAKKEER/MANSOOR','NOQODI','NBD','Cash Expense'];
 let days={},col=null,isAdmin=false,tab='entry',view=null,conn=false;
 const $=s=>document.querySelector(s),f=n=>(+n||0).toLocaleString('en-AE',{minimumFractionDigits:2,maximumFractionDigits:2}),
 today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},
@@ -39,34 +39,34 @@ dmy=s=>s.split('-').reverse().join('/'),esc=s=>String(s??'').replace(/[&<>"]/g,c
 const other=c=>c==='asna'?'thasleena':'asna';
 const list=c=>Object.values(days).filter(d=>!c||d.cashier===c).sort((a,b)=>a.date<b.date?-1:1);
 const prevClose=(c,date)=>{const p=list(c).filter(d=>d.date<date).pop();return p?p.closing:0};
-function calc(d){const n=d.notes.reduce((s,q,i)=>s+q*NOTES[i],0),c=d.coins.reduce((s,q,i)=>s+q*COINS[i],0),o=d.out.reduce((s,v)=>s+v,0);
+function calc(d){const n=d.notes.reduce((s,q,i)=>s+q*NOTES[i],0)+(d.reserved=+d.reserved||0),c=d.coins.reduce((s,q,i)=>s+q*COINS[i],0),o=d.out.reduce((s,v)=>s+v,0);
  d.notesTotal=n;d.coinsTotal=c;d.closing=n+c;d.outTotal=o;d.received=d.closing+o;d.collection=d.received-d.opening;return d}
 function route(){const h=location.pathname.replace(/\/+$/,'').slice(1);view=CASH[h]?h:(h==='admin'?'admin':null);tab='entry';render()}
 function renderNav(){const l=[['','Home'],['asna','Asna Cash Book'],['thasleena','Thasleena Cash Book'],['admin','Admin Dashboard']];
- $('#nav').innerHTML=CASH[view]?`<b style="margin-right:8px">${CASH[view]} Cash Book</b>`:l.map(([h,t])=>`<a href="/${h}" class="${(view||'')===h?'on':''}">${t}</a>`).join('');
- if(view&&CASH[view])$('#nav').innerHTML+=`<span style="flex:1"></span><button class="btn ${tab==='entry'?'p':''}" onclick="setTab('entry')">Daily Entry</button><button class="btn ${tab==='report'?'p':''}" onclick="setTab('report')">Reports</button>`}
+ $('#nav').innerHTML=CASH[view]?`<b style="margin-right:12px;font-size:26px">${CASH[view]} Cash Book</b>`:l.map(([h,t])=>`<a href="/${h}" class="${(view||'')===h?'on':''}">${t}</a>`).join('');
+ if(view&&CASH[view])$('#nav').innerHTML+=`<span style="flex:1"></span><button class="btn ${tab==='entry'?'p':''}" onclick="setTab('entry')">Daily Entry</button><button class="btn ${tab==='report'?'p':''}" onclick="setTab('report')">Reports</button>${view==='asna'?`<button class="btn ${tab==='admin'?'p':''}" onclick="setTab('admin')">Admin Dashboard</button>`:''}`}
 function setTab(t){tab=t;render()}
 function render(){renderNav();$('#msg').innerHTML=conn?'':'<div class="warn">Not connected to the shared database. Open this page signed in to claude.ai; entries cannot be saved until then.</div>';
  const a=$('#app');
  if(!view)a.innerHTML=`<div class="g g4">${['asna','thasleena'].map(c=>`<a class="card lk" href="/${c}"><b>${CASH[c]}</b><span class="mu">Cashier cash book, entry and reports</span></a>`).join('')}<a class="card lk" href="/admin"><b>Admin</b><span class="mu">Cash flow dashboard</span></a></div>`;
- else if(view==='admin')admin();else if(tab==='entry')entry(view);else report(view)}
+ else if(view==='admin'||tab==='admin')admin();else if(tab==='entry')entry(view);else report(view)}
 /* ---------- ENTRY ---------- */
 function entry(c){const o=CASH[other(c)];
  $('#app').innerHTML=`<div class="noprint"><div class="card"><h2>${CASH[c]} · Daily Cash Book</h2><div class="ctl"><div><label>Date</label><input type="date" id="dt" value="${today()}"></div><div><label>Opening Balance</label><input type="number" step="0.01" id="op"></div><div style="flex:1"><span id="st" class="mu"></span></div></div>
- <div class="g g2"><div><h3>Cash Denominations</h3><div class="sc"><table><tr><th>Currency</th><th>Qty</th><th>Amount</th></tr>${NOTES.map((v,i)=>`<tr><td>${v}</td><td><input type="number" min="0" id="n${i}" oninput="upd()"></td><td id="na${i}">0.00</td></tr>`).join('')}<tr><th>Total</th><th id="nq">0</th><th id="nt">0.00</th></tr></table></div></div>
+ <div class="g g2"><div><h3>Cash Denominations</h3><div class="sc"><table><tr><th>Currency</th><th>Qty</th><th>Amount</th></tr>${NOTES.map((v,i)=>`<tr><td>${v}</td><td><input type="number" min="0" id="n${i}" oninput="upd()"></td><td id="na${i}">0.00</td></tr>`).join('')}<tr><td>Reserved Amount</td><td><input type="number" step="0.01" min="0" id="rs" oninput="upd()"></td><td id="rsa">0.00</td></tr><tr><th>Total</th><th id="nq">0</th><th id="nt">0.00</th></tr></table></div></div>
  <div><h3>Coin Denominations</h3><div class="sc"><table><tr><th>Coin</th><th>Qty</th><th>Amount</th></tr>${COINS.map((v,i)=>`<tr><td>${v}</td><td><input type="number" min="0" id="c${i}" oninput="upd()"></td><td id="ca${i}">0.00</td></tr>`).join('')}<tr><th>Total</th><th id="cq">0</th><th id="ct">0.00</th></tr></table></div>
  <h3 style="margin-top:16px">Cash Closing Balance</h3><div class="row"><span>Closing balance</span><b class="big" id="cl">0.00</b></div></div></div></div>
- <div class="g g2"><div class="card"><h3>Amounts Handed Over / Paid</h3>${[`Amount to ${o} Cashier`,...OUTK].map((t,i)=>`<div class="row"><span>${t}</span><input type="number" step="0.01" min="0" id="o${i}" oninput="upd()" style="width:140px"></div>`).join('')}<div class="row"><span>Remarks</span><input id="rm" style="width:60%" placeholder="optional"></div></div>
+ <div class="g g2"><div class="card"><h3>Amounts Handed Over / Paid</h3>${OUTK.map((t,i)=>`<div class="row"><span>${t}</span><input type="number" step="0.01" min="0" id="o${i}" oninput="upd()" style="width:140px"></div>`).join('')}<div class="row"><span>Remarks</span><input id="rm" style="width:60%" placeholder="optional"></div></div>
  <div class="card"><h3>Summary</h3><div class="row"><span>Total handed over / paid</span><b id="ot">0.00</b></div><div class="row"><span>Total cash received</span><b id="tr">0.00</b></div><div class="row"><span>Today's collection (received − opening)</span><b id="co">0.00</b></div><div class="row"><span>Opening for next day</span><b class="big" id="nx">0.00</b></div><p style="margin-top:14px"><button class="btn p" onclick="save(1)">Save &amp; Print Day Sheet</button> <button class="btn" onclick="save()">Save only</button> <button class="btn d" onclick="del()">Delete this day</button> <span id="sv" class="ok"></span></p></div></div></div><div id="sheet"></div>`;
  $('#dt').onchange=()=>load(c);$('#op').oninput=()=>{$('#op').dataset.m=1;upd()};load(c)}
 function load(c){const dt=$('#dt').value,d=days[c+'_'+dt];$('#sv').textContent='';
  $('#op').dataset.m='';$('#op').value=d?d.opening:prevClose(c,dt);
  NOTES.forEach((_,i)=>$('#n'+i).value=d?d.notes[i]||'':'');COINS.forEach((_,i)=>$('#c'+i).value=d?d.coins[i]||'':'');
- for(let i=0;i<7;i++)$('#o'+i).value=d?d.out[i]||'':'';$('#rm').value=d?d.remarks||'':'';
+ for(let i=0;i<6;i++)$('#o'+i).value=d?d.out[i]||'':'';$('#rs').value=d?d.reserved||'':'';$('#rm').value=d?d.remarks||'':'';
  $('#st').textContent=d?'Editing a saved entry for this date.':'New entry. Opening balance is taken from the previous closing.';upd()}
-function cur(){const g=id=>+$(id).value||0;return calc({cashier:view,date:$('#dt').value,opening:g('#op'),notes:NOTES.map((_,i)=>g('#n'+i)),coins:COINS.map((_,i)=>g('#c'+i)),out:[0,1,2,3,4,5,6].map(i=>g('#o'+i)),remarks:$('#rm').value.trim()})}
+function cur(){const g=id=>+$(id).value||0;return calc({cashier:view,date:$('#dt').value,opening:g('#op'),reserved:g('#rs'),notes:NOTES.map((_,i)=>g('#n'+i)),coins:COINS.map((_,i)=>g('#c'+i)),out:[0,1,2,3,4,5].map(i=>g('#o'+i)),remarks:$('#rm').value.trim()})}
 function upd(){const d=cur();NOTES.forEach((v,i)=>$('#na'+i).textContent=f(d.notes[i]*v));COINS.forEach((v,i)=>$('#ca'+i).textContent=f(d.coins[i]*v));
- $('#nq').textContent=d.notes.reduce((a,b)=>a+b,0);$('#cq').textContent=d.coins.reduce((a,b)=>a+b,0);$('#nt').textContent=f(d.notesTotal);$('#ct').textContent=f(d.coinsTotal);
+ $('#nq').textContent=d.notes.reduce((a,b)=>a+b,0);$('#cq').textContent=d.coins.reduce((a,b)=>a+b,0);$('#nt').textContent=f(d.notesTotal);$('#rsa').textContent=f(d.reserved);$('#ct').textContent=f(d.coinsTotal);
  $('#cl').textContent=f(d.closing);$('#ot').textContent=f(d.outTotal);$('#tr').textContent=f(d.received);$('#co').textContent=f(d.collection);$('#nx').textContent=f(d.closing)}
 async function save(p){if(!col)return alert('Not connected to the database.');const d=cur();if(!d.date)return alert('Pick a date.');d.updated=Date.now();
  try{const {error}=await sb.from('cash_days').upsert({id:d.cashier+'_'+d.date,cashier:d.cashier,day:d.date,payload:d});if(error)throw error;days[d.cashier+'_'+d.date]=d;$('#sv').textContent='Saved ✓';sheet(d);if(p)setTimeout(printSheet,400)}catch(e){alert('Could not save: '+(e.message||e.code))}}
@@ -75,15 +75,25 @@ function printSheet(){document.body.classList.add('ps');try{print()}catch(e){ale
 async function dlSheet(){if(!dl)return alert('Download not available here.');const el=$('#sheet').cloneNode(true);el.querySelectorAll('.noprint').forEach(x=>x.remove());
  const h=`<!DOCTYPE html><meta charset=utf-8><title>Cash Book ${_sd.date}</title><style>${PRCSS}body{margin:16px;background:#fff}.pr{border:0}@page{size:A4;margin:10mm}</style>${el.innerHTML.replace(/src="\//g,'src="'+location.origin+'/')}`;
  try{await dl.save({filename:'cashbook-'+_sd.cashier+'-'+_sd.date+'.html',data:h})}catch(e){}}
+function printReport(c){const m=$('#mo').value,L=list(c).filter(d=>d.date.startsWith(m));if(!L.length)return alert('No entries this month.');
+ const oo=i=>L.reduce((a,d)=>a+d.out[i],0),S=k=>L.reduce((a,d)=>a+d[k],0),mn=new Date(m+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}),vf=L.filter(d=>d.verifiedBy).length;
+ $('#sheet').innerHTML=`<div class="pr rt"><div class="lh"><img alt="" src="/logo-amer.png"><div><h1>True Link Government Transaction Center LLC</h1><div class="tri"><i style="background:#b3202a"></i><i style="background:#222"></i><i style="background:#0f6b44"></i></div><small>Cash Book</small></div><img alt="" src="/logo-truelink.png"></div>
+<div class="tt">MONTHLY CASH REPORT</div>
+<div class="mt"><div><small>Cashier</small><b>${CASH[c]}</b></div><div><small>Period</small><b>${mn}</b></div><div><small>Entries</small><b>${L.length}</b></div><div><small>Verified</small><b>${vf} of ${L.length}</b></div></div>
+<table><tr><th>Date</th><th>Opening</th><th>Closing</th>${OUTK.map(t=>`<th>${t}</th>`).join('')}<th>Total Received</th><th>Collection</th><th>Verified By</th></tr>${L.map(d=>`<tr><td>${dmy(d.date)}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td>${d.out.map(v=>`<td>${f(v)}</td>`).join('')}<td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${d.verifiedBy?esc(d.verifiedBy):'Pending'}</td></tr>`).join('')}<tr class="tot"><td>Total</td><td></td><td></td>${[0,1,2,3,4,5].map(i=>`<td>${f(oo(i))}</td>`).join('')}<td></td><td>${f(S('collection'))}</td><td></td></tr></table>
+<div class="sg"><div><span class="sig">${CASH[c]}</span><small>Prepared &amp; Checked By</small></div><div><span class="sig">&nbsp;</span><small>Verified By</small></div></div>
+<div class="ft"><span>True Link Cash Book · Internal document</span><span>Printed ${new Date().toLocaleString('en-GB')}</span></div></div>`;
+ const st=document.createElement('style');st.textContent='@page{size:A4 landscape;margin:8mm}';document.head.appendChild(st);document.body.classList.add('ps');
+ try{print()}catch(e){alert('Printing is blocked in this view.')}setTimeout(()=>{document.body.classList.remove('ps');st.remove()},1500)}
 /* ---------- REPORT ---------- */
-function rowsOf(d){return `<tr><td>${dmy(d.date)}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td>${d.out.map(v=>`<td>${f(v)}</td>`).join('')}<td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${d.verifiedBy?esc(d.verifiedBy):'<span class="mu">Pending</span>'}</td></tr>`}
-const HEAD=c=>`<tr><th>Date</th><th>Opening</th><th>Closing</th><th>To ${CASH[other(c)]||'Cashier'}</th>${OUTK.map(t=>`<th>${t}</th>`).join('')}<th>Total Received</th><th>Collection</th><th>Verified</th></tr>`;
+function rowsOf(d){return `<tr><td>${dmy(d.date)}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td>${d.out.map(v=>`<td>${f(v)}</td>`).join('')}<td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${d.verifiedBy?esc(d.verifiedBy):'<span class="mu">Pending</span>'}</td><td>${d.verifiedBy?`<button class="btn" onclick="event.stopPropagation();sheet(days['${d.cashier}_${d.date}']);setTimeout(printSheet,300)">Print</button>`:'<span class="mu">—</span>'}</td></tr>`}
+const HEAD=c=>`<tr><th>Date</th><th>Opening</th><th>Closing</th>${OUTK.map(t=>`<th>${t}</th>`).join('')}<th>Total Received</th><th>Collection</th><th>Verified</th><th>Print</th></tr>`;
 function report(c){const m=window._m||today().slice(0,7);
- $('#app').innerHTML=`<div class="card"><h2>${CASH[c]} · Reports</h2><div class="ctl noprint"><div><label>Month</label><input type="month" id="mo" value="${m}"></div><button class="btn" onclick="csv('${c}')">Download CSV</button><button class="btn" onclick="try{print()}catch(e){}">Print</button></div><div id="rp"></div></div><div id="sheet"></div>`;
+ $('#app').innerHTML=`<div class="card"><h2>${CASH[c]} · Reports</h2><div class="ctl noprint"><div><label>Month</label><input type="month" id="mo" value="${m}"></div><button class="btn" onclick="csv('${c}')">Download CSV</button><button class="btn" onclick="printReport('${c}')">Print Report</button></div><div id="rp"></div></div><div id="sheet"></div>`;
  $('#mo').onchange=()=>{window._m=$('#mo').value;rp(c)};rp(c)}
 function rp(c){const m=$('#mo').value,L=list(c).filter(d=>d.date.startsWith(m));
  const s=k=>L.reduce((a,d)=>a+(k==='o'?0:d[k]),0),oo=i=>L.reduce((a,d)=>a+d.out[i],0);
- $('#rp').innerHTML=L.length?`<div class="sc"><table>${HEAD(c)}${L.map(rowsOf).join('')}<tr><th>Total</th><th></th><th></th>${[0,1,2,3,4,5,6].map(i=>`<th>${f(oo(i))}</th>`).join('')}<th>${f(s('received'))}</th><th>${f(s('collection'))}</th><th></th></tr></table></div><p class="mu noprint">Click a date to view the day sheet.</p>`:'<p class="mu">No entries for this month.</p>';
+ $('#rp').innerHTML=L.length?`<div class="sc"><table>${HEAD(c)}${L.map(rowsOf).join('')}<tr><th>Total</th><th></th><th></th>${[0,1,2,3,4,5].map(i=>`<th>${f(oo(i))}</th>`).join('')}<th>${f(s('received'))}</th><th>${f(s('collection'))}</th><th></th><th></th></tr></table></div><p class="mu noprint">Click a date to view the day sheet.</p>`:'<p class="mu">No entries for this month.</p>';
  $('#rp').querySelectorAll('tr').forEach((r,i)=>{const d=L[i-1];if(d){r.style.cursor='pointer';r.onclick=()=>sheet(d)}});$('#sheet').innerHTML=''}
 const PRCSS=`.pr{background:#fff;color:#111;font:12px/1.4 "Segoe UI",Arial,sans-serif;padding:14px 18px;border:1px solid #cfd6d2;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .pr *{box-sizing:border-box}.pr .lh{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:center}.pr .lh img{height:52px;max-width:22%;object-fit:contain}
@@ -94,7 +104,7 @@ const PRCSS=`.pr{background:#fff;color:#111;font:12px/1.4 "Segoe UI",Arial,sans-
 .pr th,.pr td{border:1px solid #333;padding:3px 7px;text-align:right;color:#111}.pr th{background:#e8efe9;color:#222;font-size:11px;text-transform:uppercase;letter-spacing:.04em}.pr td:first-child,.pr th:first-child{text-align:left}
 .pr tr.tot td{background:#f1f1f1;font-weight:700}.pr .cl{display:flex;justify-content:space-between;border:2px solid #0f6b44;padding:7px 10px;font-size:14px;font-weight:700;margin:2px 0 8px}
 .pr .sg{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:38px}.pr .sig{display:block;min-width:0;border:0;border-bottom:1px solid #111;padding:0 4px 2px;font:italic 22px "Segoe Script","Brush Script MT",cursive;min-height:30px;color:#111}
-.pr .sg small{color:#555;display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}.pr .ft{margin-top:14px;border-top:1px solid #bbb;padding-top:5px;color:#666;font-size:10px;display:flex;justify-content:space-between}`;
+.pr .sg small{color:#555;display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}.pr .ft{margin-top:14px;border-top:1px solid #bbb;padding-top:5px;color:#666;font-size:10px;display:flex;justify-content:space-between}.pr.rt th,.pr.rt td{padding:3px 4px;font-size:10px}.pr.rt td:last-child{text-align:left}`;
 document.head.insertAdjacentHTML('beforeend','<style>'+PRCSS+'</style>');
 function sheet(d){window._sd=d;const o=CASH[other(d.cashier)],nm=CASH[d.cashier],wd=new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'}),ref='TL-'+d.cashier.toUpperCase()+'-'+d.date.replace(/-/g,'');
  $('#sheet').innerHTML=`<div class="card"><div class="noprint" style="margin-bottom:10px"><button class="btn p" onclick="printSheet()">Print</button> <button class="btn" onclick="dlSheet()">Download sheet (HTML)</button></div>
@@ -102,19 +112,19 @@ function sheet(d){window._sd=d;const o=CASH[other(d.cashier)],nm=CASH[d.cashier]
 <div class="tt">DAILY CASH BOOK</div>
 <div class="mt"><div><small>Cashier</small><b>${nm}</b></div><div><small>Date</small><b>${dmy(d.date)}</b></div><div><small>Day</small><b>${wd}</b></div><div><small>Reference</small><b>${ref}</b></div></div>
 <table style="margin-bottom:10px"><tr class="tot"><td>Opening Balance</td><td>${f(d.opening)}</td></tr></table>
-<div class="two"><div><table><tr><th>Currency</th><th>Qty</th><th>Amount</th></tr>${NOTES.map((v,i)=>`<tr><td>${v}</td><td>${d.notes[i]}</td><td>${f(d.notes[i]*v)}</td></tr>`).join('')}<tr class="tot"><td>Total</td><td>${d.notes.reduce((a,b)=>a+b,0)}</td><td>${f(d.notesTotal)}</td></tr></table>
+<div class="two"><div><table><tr><th>Currency</th><th>Qty</th><th>Amount</th></tr>${NOTES.map((v,i)=>`<tr><td>${v}</td><td>${d.notes[i]}</td><td>${f(d.notes[i]*v)}</td></tr>`).join('')}<tr><td>Reserved Amount</td><td></td><td>${f(d.reserved)}</td></tr><tr class="tot"><td>Total</td><td>${d.notes.reduce((a,b)=>a+b,0)}</td><td>${f(d.notesTotal)}</td></tr></table>
 <table><tr><th>Coin</th><th>Qty</th><th>Amount</th></tr>${COINS.map((v,i)=>`<tr><td>${v}</td><td>${d.coins[i]}</td><td>${f(d.coins[i]*v)}</td></tr>`).join('')}<tr class="tot"><td>Total</td><td>${d.coins.reduce((a,b)=>a+b,0)}</td><td>${f(d.coinsTotal)}</td></tr></table></div>
-<div><table><tr><th>Particulars</th><th>Amount</th></tr><tr><td>Cash closing balance</td><td>${f(d.closing)}</td></tr>${[`Amount to ${o} Cashier`,...OUTK].map((t,i)=>`<tr><td>${t}</td><td>${f(d.out[i])}</td></tr>`).join('')}<tr class="tot"><td>Total handed over / paid</td><td>${f(d.outTotal)}</td></tr><tr class="tot"><td>Total cash received</td><td>${f(d.received)}</td></tr></table>
+<div><table><tr><th>Particulars</th><th>Amount</th></tr><tr><td>Cash closing balance</td><td>${f(d.closing)}</td></tr>${OUTK.map((t,i)=>`<tr><td>${t}</td><td>${f(d.out[i])}</td></tr>`).join('')}<tr class="tot"><td>Total handed over / paid</td><td>${f(d.outTotal)}</td></tr><tr class="tot"><td>Total cash received</td><td>${f(d.received)}</td></tr></table>
 <div class="cl"><span>Opening for Next Day</span><span>${f(d.closing)}</span></div>${d.remarks?`<p style="margin:0"><b>Remarks:</b> ${esc(d.remarks)}</p>`:''}</div></div>
 <div class="sg"><div><span class="sig">${nm}</span><small>Prepared &amp; Checked By · ${dmy(d.date)}</small></div><div>${d.verifiedBy?`<span class="sig">${esc(d.verifiedBy)}</span><small>Verified By · ${dmy(d.verifiedAt||d.date)}</small>`:`<span class="sig">&nbsp;</span><small>Verified By · pending</small>`}</div></div>
 <div class="ft"><span>True Link Cash Book · Internal document</span><span>Printed ${new Date().toLocaleString('en-GB')}</span></div></div></div>`;$('#sheet').scrollIntoView({behavior:'smooth'})}
 async function csv(c,all){const L=all?list():list(c).filter(d=>d.date.startsWith($('#mo').value));
- const h=['Cashier','Date','Opening','Closing','To other cashier',...OUTK,'Total received','Collection','Verified by','Remarks'];
+ const h=['Cashier','Date','Opening','Closing',...OUTK,'Total received','Collection','Verified by','Remarks'];
  const t=[h,...L.map(d=>[CASH[d.cashier],d.date,d.opening,d.closing,...d.out,d.received,d.collection,d.verifiedBy||'',d.remarks||''])].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
  if(!dl)return alert('Download not available here.');try{await dl.save({filename:'truelink-cashbook-'+(all?'all':c)+'.csv',data:t})}catch(e){}}
 /* ---------- ADMIN ---------- */
 function vcell(d){const id=d.cashier+'_'+d.date,sh=`<button class="btn" onclick="sheet(days['${id}'])">Sheet</button>`;
- return d.verifiedBy?`<span class="ok">✓ ${esc(d.verifiedBy)}</span> <button class="btn" onclick="unverify('${id}')">Undo</button> ${sh}`:`<select id="vs_${id}" style="width:auto"><option>Asna</option><option>Shabeeb</option></select> <button class="btn p" onclick="verify('${id}')">Verify</button> ${sh}`}
+ return d.verifiedBy?`<span class="ok">✓ ${esc(d.verifiedBy)}</span> <button class="btn" onclick="unverify('${id}')">Undo</button> ${sh} <button class="btn p" onclick="sheet(days['${id}']);setTimeout(printSheet,300)">Print</button>`:`<select id="vs_${id}" style="width:auto"><option>Asna</option><option>Shabeeb</option></select> <button class="btn p" onclick="verify('${id}')">Verify</button> ${sh}`}
 async function setV(id,by){const d=days[id];if(!d)return;if(by){d.verifiedBy=by;d.verifiedAt=today()}else{delete d.verifiedBy;delete d.verifiedAt}
  try{const {error}=await sb.from('cash_days').upsert({id,cashier:d.cashier,day:d.date,payload:d});if(error)throw error;ad()}catch(e){alert('Could not update: '+(e.message||e))}}
 function verify(id){setV(id,$('#vs_'+id).value)}function unverify(id){if(confirm('Remove verification?'))setV(id,null)}
@@ -130,13 +140,13 @@ function ad(){if(!$('#f1'))return;const a=$('#f1').value,b=$('#t1').value,c=$('#
  const ds=[...new Set(L.map(d=>d.date))],val=(k,x)=>(days[k+'_'+x]||{collection:0}).collection,mx=Math.max(1,...ds.flatMap(x=>['asna','thasleena'].map(k=>val(k,x)))),W=Math.max(560,ds.length*54),H=190;
  const bars=ds.map((x,i)=>['asna','thasleena'].map((k,j)=>{const h=Math.max(0,val(k,x))/mx*(H-40);return `<rect x="${i*54+10+j*20}" y="${H-24-h}" width="18" height="${h}" rx="3" fill="${j?'#b3202a':'#0f6b44'}"><meta name="robots" content="noindex"><title>${CASH[k]} ${dmy(x)}: ${f(val(k,x))}</title></rect>`}).join('')+`<text x="${i*54+30}" y="${H-8}" font-size="10" text-anchor="middle" fill="currentColor">${x.slice(5).split('-').reverse().join('/')}</text>`).join('');
  $('#ad').innerHTML=`<div class="g g4" style="margin-bottom:14px">${kp('Total cash received',S('received'))}${kp("Collection (received − opening)",S('collection'))}${kp('Total handed over / paid',S('outTotal'),'#b3202a')}<div class="k" style="border-left-color:#b3202a"><span>Pending verification</span><b>${L.filter(d=>!d.verifiedBy).length}</b></div>${kp('Asna closing (latest)',last('asna'),'#222')}${kp('Thasleena closing (latest)',last('thasleena'),'#222')}</div>
- <div class="g g2"><div class="card"><h2>Where the cash went</h2>${['Between cashiers',...OUTK].map((t,i)=>`<div class="row"><span>${t}</span><b>${f(O(i))}</b></div>`).join('')}</div>
+ <div class="g g2"><div class="card"><h2>Where the cash went</h2>${OUTK.map((t,i)=>`<div class="row"><span>${t}</span><b>${f(O(i))}</b></div>`).join('')}</div>
  <div class="card"><h2>Daily collection</h2><div class="sc">${ds.length?`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${bars}</svg>`:'<p class="mu">No data in range.</p>'}</div><span class="mu"><b style="color:#0f6b44">■</b> Asna &nbsp; <b style="color:#b3202a">■</b> Thasleena</span></div></div>
  <div class="card"><h2>All entries</h2><div class="sc"><table><tr><th>Date</th><th>Cashier</th><th>Opening</th><th>Closing</th><th>Handed over / paid</th><th>Total received</th><th>Collection</th><th>Verification</th></tr>${L.slice().reverse().map(d=>`<tr><td>${dmy(d.date)}</td><td style="text-align:left">${CASH[d.cashier]}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td><td>${f(d.outTotal)}</td><td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td style="white-space:nowrap">${vcell(d)}</td></tr>`).join('')||'<tr><td colspan="8" class="mu">No entries.</td></tr>'}</table></div></div><div id="sheet"></div>`}
 /* ---------- INIT ---------- */
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const dl={save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/plain'}));a.download=filename;a.click()}};
-async function loadDays(){const {data,error}=await sb.from('cash_days').select('id,payload');if(error){$('#msg').innerHTML='<div class="warn">Could not load data: '+esc(error.message)+'</div>';return}days={};data.forEach(r=>{if(r.payload&&r.payload.notes)days[r.id]=r.payload})}
-async function boot(){isAdmin=location.pathname.replace(/\/+$/,'')==='/admin';col=true;conn=true;await loadDays();route();if(isAdmin)setInterval(async()=>{if(!$('#sheet')||$('#sheet').innerHTML)return;await loadDays();ad()},30000)}
+async function loadDays(){const {data,error}=await sb.from('cash_days').select('id,payload');if(error){$('#msg').innerHTML='<div class="warn">Could not load data: '+esc(error.message)+'</div>';return}days={};data.forEach(r=>{const v=r.payload;if(v&&v.notes){if(v.out.length===7){v.out=v.out.slice(1);calc(v)}days[r.id]=v}})}
+async function boot(){isAdmin=['/admin','/asna'].includes(location.pathname.replace(/\/+$/,''));col=true;conn=true;await loadDays();route();if(isAdmin)setInterval(async()=>{if(!$('#sheet')||$('#sheet').innerHTML)return;await loadDays();ad()},30000)}
 boot();
 </script></body></html>
