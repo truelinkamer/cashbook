@@ -117,8 +117,16 @@ const PRCSS=`.pr{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial,H
 .pr .mm .gh th{background:#e4e8e6;color:#1b1f1d;text-transform:none;font-size:12px;text-align:center;letter-spacing:0}.pr .mm td:nth-child(2){text-align:left}.pr .mm td:first-child{text-align:center}
 .pr .mm .gt td{background:#e4e8e6;font-weight:700;color:#b3202a;border-top:2px solid #6b7771}
 .pr .sm{width:62%;margin:0 auto 14px}.pr .sm td:first-child{text-align:center;font-weight:700}.pr .sm td:last-child{color:#b3202a;font-weight:700;text-align:center}.pr .sm .gt td:first-child{color:#1b1f1d}
-.pr .plt{width:100%;border-collapse:collapse;margin-top:12px}.pr .plt td{border:1px solid #333;padding:3px 8px;text-align:center;font-size:12px;background:#fff;color:#111}.pr .plt .plh{font-size:15px;font-weight:700;font-style:italic;border:0;padding:8px 0}.pr .plt .pc{width:30px}.pr .plt .pb td{font-weight:700;font-style:italic}.pr .plt .pu{text-decoration:underline}.pr .plt .pe{font-weight:700;font-style:italic;text-decoration:underline;background:#f4f8f5}.pr .plt .pret td{font-weight:700;font-style:italic;color:#b3202a}.pr .plt .pret td:last-child{text-decoration:underline}
-.pr .pnote{display:flex;gap:16px;align-items:center;background:#ffff00;border:1px solid #333;padding:8px 12px;margin-top:14px;font-size:11px}.pr .pnote b{min-width:120px;text-align:center}.pr .pper{background:#9fc98f;border:1px solid #333;text-align:center;font-weight:700;padding:8px;margin-top:2px}`;
+.pr .plh{text-align:center;font:600 22px Georgia,"Times New Roman",serif;color:#1b1f1d;margin:16px 0 4px;letter-spacing:.01em}.pr .plh small{display:block;font:600 11px "Segoe UI",Arial,sans-serif;letter-spacing:.3em;color:#0f6b44;margin-top:4px}
+.pr .pcur{text-align:right;font-size:10px;color:#6b7771;margin:6px 2px 4px;font-style:italic}
+.pr .pl{width:100%;border-collapse:collapse;border:1px solid #cfd8d3;margin:0 0 14px}
+.pr .pl td{border:0;border-bottom:1px solid #e6ebe8;padding:7px 14px;font-size:12.5px;background:#fff;color:#1b1f1d}
+.pr .pl td.l{text-align:left}.pr .pl td.c{width:28px;text-align:center;color:#9aa49f;padding:7px 0}.pr .pl td.a{width:170px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}.pr .pl td.a.ng{color:#b3202a}
+.pr .pl tr.pt td{background:#e6f1df;font-weight:700;font-size:13px;border-top:1.5px solid #6a9a58;border-bottom:3px double #6a9a58}
+.pr .pl td.pe{background:#faf0c8;text-align:center;font-weight:700;letter-spacing:.22em;text-transform:uppercase;font-size:11.5px;color:#6b5a10;border-top:1px solid #e3cf7a;border-bottom:1px solid #e3cf7a}
+.pr .pl tr.pq td{font-weight:700;font-size:14.5px;border-top:2px solid #1b1f1d;border-bottom:3px double #1b1f1d}.pr .pl tr.pq.pos td{background:#dcefd3;color:#1d5a14}.pr .pl tr.pq.neg td{background:#f9dedf;color:#8f1b24}.pr .pl tr.pq td.a{color:inherit}
+.pr .pnote{display:flex;gap:14px;align-items:center;background:#fff8e1;border:1px solid #ecd58a;border-left:4px solid #e0a800;padding:8px 12px;font-size:11px}.pr .pnote b{white-space:nowrap}
+.pr .pper{background:#0f6b44;color:#fff;text-align:center;font-weight:600;letter-spacing:.08em;padding:9px;margin-top:10px;font-size:12px;text-transform:uppercase;border-radius:2px}`;
 document.head.insertAdjacentHTML('beforeend','<style>'+PRCSS+'</style>');
 function sheet(d){window._sd=d;window._pt=CASH[d.cashier]+' Cashbook '+dfn(d.date);const o=CASH[other(d.cashier)],nm=CASH[d.cashier],wd=new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'}),ref='TL-'+d.cashier.toUpperCase()+'-'+d.date.replace(/-/g,'');
  $('#sheet').innerHTML=`<div class="card"><div class="noprint" style="margin-bottom:10px">${isSub(d)?`<button class="btn p" onclick="printSheet()">Print</button> <button class="btn" onclick="dlSheet()">Download sheet (HTML)</button>`:`<span class="mu">Draft – submit for verification to enable printing.</span>`}</div>
@@ -428,9 +436,9 @@ async function boot(){isAdmin=['/admin','/asna','/shabeeb'].includes(location.pa
 /* ================= NAVIGATION: AMER / TAWJEEH THUMBNAILS ================= */
 document.head.insertAdjacentHTML('beforeend','<style>.nav .crumb{border:0;background:none;padding:2px 4px;font-weight:600;color:var(--ac);cursor:pointer;font:inherit}.nav .sep{color:var(--mu)}.nav .tb{border-radius:10px}</style>');
 const SECN={amer:'AMER',tawjeeh:'TAWJEEH'},SUBN={daily:'Daily Activity',monthly:'Monthly Activity',dtc:'DTC Invoice'},
- TABN={cb:'Cash Book',rp:'Reports',ex:'Daily Expense Sheet',ab:'Account Balance & Sales Report',vf:'Verification',me:'Monthly Expense Sheet',pl:'Profit & Loss',tc:'Cashbook',tr:'Reports',tb:'Closing Account Balance'},
+ TABN={cb:'Cash Book',rp:'Reports',ex:'Daily Expense Sheet',ab:'Account Balance & Sales Report',vf:'Verification',me:'Monthly Expense Sheet',pl:'Profit & Loss',tc:'Cashbook',tr:'Reports',tb:'Closing Account Balance',tp:'Profit & Loss'},
  userName=()=>CASH[view]||window._who||'Admin',bk=()=>CASH[view]?view:'asna';
-function tabsFor(S,B){if(S==='tawjeeh')return['tc','tr','tb'];if(B==='daily')return view==='thasleena'?['cb','rp','ex']:['cb','rp','ex','ab','vf'];if(B==='monthly')return['me','pl'];return[]}
+function tabsFor(S,B){if(S==='tawjeeh')return window._who==='Shabeeb'?['tc','tr','tb','tp']:['tc','tr'];if(B==='daily')return view==='thasleena'?['cb','rp','ex']:['cb','rp','ex','ab','vf'];if(B==='monthly')return['me','pl'];return[]}
 function go(S,B,T){window._sec=S||'';window._sub=B||'';window._tb=T||'';render()}
 const navInsert=()=>{if(view&&!$('#nb'))$('#app').insertAdjacentHTML('afterbegin',adminTabs())};
 function adminTabs(){const S=window._sec||'',B=window._sub||'',T=window._tb||'',cr=[[userName(),"go('','','')"]];
@@ -463,39 +471,41 @@ function render(){window._corr=null;renderNav();setHeader();
  if(S==='amer'&&B==='monthly'&&!isAdmin)B='';
  if(S==='amer'&&B==='daily'&&!tabsFor('amer','daily').includes(T))T='cb';
  if(S==='amer'&&B==='monthly'&&!['me','pl'].includes(T))T='me';
- if(S==='tawjeeh'&&!['tc','tr','tb'].includes(T))T='tc';
+ if(S==='tawjeeh'&&!tabsFor('tawjeeh','').includes(T))T='tc';
  window._sec=S;window._sub=B;window._tb=T;
  if(!S)thumbs('');else if(S==='amer'&&!B)thumbs('amer');
  else if(S==='amer'&&B==='daily'){if(T==='cb')entry(bk());else if(T==='rp')report(bk());else if(T==='ex')expDay();else if(T==='ab')adminBal();else adminFlow()}
  else if(S==='amer'&&B==='monthly'){if(T==='pl')plView();else adminExp()}
  else if(S==='amer'&&B==='dtc'){if(window._ivm==='list')invList();else invForm()}
- else if(S==='tawjeeh'){if(T==='tr')tlReport();else if(T==='tb')tcbView();else tlEntry()}
+ else if(S==='tawjeeh'){if(T==='tr')tlReport();else if(T==='tb')tcbView();else if(T==='tp')plView('tj');else tlEntry()}
  navInsert()}
 async function autoRefresh(){if(document.hidden||window._corr||!view)return;try{await loadDays();const sh=$('#sheet'),open=sh&&sh.innerHTML,S=window._sec||'',B=window._sub||'',T=window._tb||'';
  if(S==='amer'&&B==='daily'){if(T==='cb'){if(!eDirty&&$('#dt')&&!$('#dt').disabled){const sv=$('#sv').textContent;load(window._ec);$('#sv').textContent=sv}}else if(T==='rp'){if(!open)rp(bk())}else if(T==='ex'){if(!xDirty)xLoad()}else if(T==='ab'){if(!bDirty&&!open)bLoad()}else if(T==='vf'){if(!open)ad()}}
  else if(S==='amer'&&B==='monthly'){if(T==='pl'){if(!pDirty&&!open)plLoad()}else if(!mDirty&&!open)mLoad()}
  else if(S==='amer'&&B==='dtc'){await loadInv();if(window._ivm==='list'&&!open)render()}
- else if(S==='tawjeeh'){await loadT();if(T==='tr'){if(!open)tlRp()}else if(T==='tb'){if(!cDirty&&!open)tcbLoad()}else if(!tDirty&&$('#tdt')){const sv=$('#tsv').textContent;tlLoad();$('#tsv').textContent=sv}}
+ else if(S==='tawjeeh'){await loadT();if(T==='tr'){if(!open)tlRp()}else if(T==='tb'){if(!cDirty&&!open)tcbLoad()}else if(T==='tp'){if(!pDirty&&!open)plLoad()}else if(!tDirty&&$('#tdt')){const sv=$('#tsv').textContent;tlLoad();$('#tsv').textContent=sv}}
  $('#rf').textContent='Auto-refresh every 30 s \u00b7 last updated '+new Date().toLocaleTimeString('en-GB')}catch(e){}}
-/* ================= PROFIT & LOSS (monthly) ================= */
+/* ================= PROFIT & LOSS (AMER monthly + Tawjeeh for Shabeeb) ================= */
 let P=null,pDirty=false;
 const PLE=['Govt. Fees','Total Salary','Bonus to Staffs','Total GPSSA','DEWA','Etisalat','Office Rent','Office Related License or Renewals','Office Maintenance','Staff Visa Exp','Pantry & Other Office Exp','Amer GCC Employees Pension Deduction','Fuel & Vehicle Service & Parking','IT (Including Monthly Calculated AMC)','*Bank Charges','DTC Typing Commission','Amer Franchise Fee'],
+ PLT=['Govt. Fees','Total Salary','GPSSA','Office Space Rent','Office Expenses','Staff Visa Expenses','Staff Welfare (Ticket Allowance)','Office License Related Exp','Bank Charge','IT & Software'],
  PLN='Include transaction bank charges and income from Credit Card transactions',
+ plId=(k,m)=>(k==='tj'?'tpl_':'pl_')+m,
  plTitle=m=>{const [y,mo]=m.split('-');return MN[mo-1].toUpperCase()+' '+y},
  plPeriod=m=>{const [a,b]=pRange(m),fm=s=>{const [y,mo,d]=s.split('-');return (+d)+' '+MN[mo-1]+' '+y};return fm(a)+' to '+fm(b)},
  plT=()=>{const i=num(P.ts)-num(P.td)-num(P.tc),e=P.exp.reduce((x,r)=>x+num(r.a),0);return {inc:i,exp:e,ret:i-e}};
-function plView(){const m=window._pm=window._pm||defP();
- $('#app').innerHTML=`<div class="card"><h2>Profit &amp; Loss</h2><div class="ctl noprint"><div><label>Period ending (month)</label><input type="month" id="pm" value="${m}"></div><div><label>Prepared By</label><select id="pwho" onchange="pDirty=true">${vOpts()}</select></div><button class="btn p" onclick="plSave()">Save</button><button class="btn" onclick="plPrint()">Print</button><button class="btn" onclick="plLoad()">Refresh</button><span id="pst" class="mu"></span></div><div id="pb"></div></div><div id="sheet"></div>`;
+function plView(k){window._plk=k||'amer';const m=window._pm=window._pm||defP();
+ $('#app').innerHTML=`<div class="card"><h2>${window._plk==='tj'?'Tawjeeh \u00b7 ':''}Profit &amp; Loss</h2><div class="ctl noprint"><div><label>Period ending (month)</label><input type="month" id="pm" value="${m}"></div><div><label>Prepared By</label><select id="pwho" onchange="pDirty=true">${vOpts()}</select></div><button class="btn p" onclick="plSave()">Save</button><button class="btn" onclick="plPrint()">Print</button><button class="btn" onclick="plLoad()">Refresh</button><span id="pst" class="mu"></span></div><div id="pb"></div></div><div id="sheet"></div>`;
  $('#pm').onchange=()=>{if(pDirty&&!confirm('Discard unsaved changes?')){$('#pm').value=window._pm;return}plLoad()};plLoad()}
-async function plLoad(){const m=$('#pm').value;if(!m)return;window._pm=m;$('#pst').textContent='Loading\u2026';
- const r=await sb.from('exp_docs').select('payload').eq('id','pl_'+m).maybeSingle();if(r.error){$('#pst').textContent='Could not load: '+r.error.message;return}
+async function plLoad(){const k=window._plk||'amer',m=$('#pm').value;if(!m)return;window._pm=m;$('#pst').textContent='Loading\u2026';
+ const r=await sb.from('exp_docs').select('payload').eq('id',plId(k,m)).maybeSingle();if(r.error){$('#pst').textContent='Could not load: '+r.error.message;return}
  const p=r.data&&r.data.payload;
- if(p)P={m,ts:p.ts,td:p.td,tc:p.tc,exp:p.exp.map(x=>({...x})),note:p.note,by:p.by};
- else{const l=await sb.from('exp_docs').select('payload').like('id','pl_%').lt('id','pl_'+m).order('id',{ascending:false}).limit(1),q=l.data&&l.data[0]&&l.data[0].payload;
-  P={m,ts:'',td:'',tc:'',exp:(q?q.exp.map(x=>x.n):PLE).map(n=>({u:uid(),n,a:''})),note:q?q.note:PLN}}
+ if(p)P={k,m,ts:p.ts,td:p.td,tc:p.tc,exp:p.exp.map(x=>({...x})),note:p.note,by:p.by};
+ else{const pre=k==='tj'?'tpl_':'pl_',l=await sb.from('exp_docs').select('payload').like('id',pre+'%').lt('id',pre+m).order('id',{ascending:false}).limit(1),q=l.data&&l.data[0]&&l.data[0].payload;
+  P={k,m,ts:'',td:'',tc:'',exp:(q?q.exp.map(x=>x.n):(k==='tj'?PLT:PLE)).map(n=>({u:uid(),n,a:''})),note:q&&q.note?q.note:PLN}}
  pDirty=false;plDraw();if(p&&p.prep)$('#pwho').value=p.prep;$('#pst').textContent=p?'Last saved by '+p.by+' \u00b7 '+new Date(p.at).toLocaleString('en-GB'):'Not saved yet for this period. Fill in the figures and click Save.'}
 function plDraw(){const t=plT(),bi='type="text" inputmode="decimal" class="cm" data-neg="1"';
- $('#pb').innerHTML=`<h3 style="${OH}">Calculated Profit &amp; Loss \u00b7 ${plTitle(P.m)}</h3><p class="mu" style="text-align:center">Date period: <b>${plPeriod(P.m)}</b></p><div class="sc"><table style="max-width:780px;margin:0 auto">
+ $('#pb').innerHTML=`<h3 style="${OH}">Calculated Profit &amp; Loss \u00b7 ${plTitle(P.m)}</h3><p class="mu" style="text-align:center">Date period: <b>${plPeriod(P.m)}</b> \u00b7 only rows with a value are printed</p><div class="sc"><table style="max-width:780px;margin:0 auto">
 <tr><td>Total Sales</td><td style="width:180px"><input ${bi} value="${P.ts}" oninput="pl('ts',this.value)"></td><td style="width:50px"></td></tr>
 <tr><td>Total Discounts on Sales</td><td><input ${bi} value="${P.td}" oninput="pl('td',this.value)"></td><td></td></tr>
 <tr><td>Total Commission on Sales</td><td><input ${bi} value="${P.tc}" oninput="pl('tc',this.value)"></td><td></td></tr>
@@ -504,16 +514,18 @@ function plDraw(){const t=plT(),bi='type="text" inputmode="decimal" class="cm" d
 ${P.exp.map((r,j)=>`<tr><td><input value="${esc(r.n)}" oninput="plr(${j},'n',this.value)" style="text-align:left"></td><td><input ${bi} value="${r.a}" oninput="plr(${j},'a',this.value)"></td><td><button class="btn d" onclick="pldel(${j})">\u2715</button></td></tr>`).join('')}
 <tr><td style="font-weight:700">Total Expense</td><td id="pl_e" style="font-weight:700;text-align:right">${f(t.exp)}</td><td></td></tr>
 <tr><td style="font-weight:700">Calculated Return</td><td id="pl_r" style="font-weight:700;text-align:right;color:${t.ret<0?'#c0262f':'#0a7a3d'}">${f(t.ret)}</td><td></td></tr></table></div>
-<button class="btn" style="margin-top:8px" onclick="pladd()">+ Add expense row</button><div class="ctl" style="margin-top:12px"><div style="flex:1;min-width:260px"><label>Note for *Bank Charges (yellow box on the print)</label><input value="${esc(P.note)}" oninput="pl('note',this.value)"></div></div>`}
+<button class="btn" style="margin-top:8px" onclick="pladd()">+ Add expense row</button>${P.k==='tj'?'':`<div class="ctl" style="margin-top:12px"><div style="flex:1;min-width:260px"><label>Note for *Bank Charges (shown on the print when that row has a value)</label><input value="${esc(P.note)}" oninput="pl('note',this.value)"></div></div>`}`}
 function plUpd(){const t=plT();$('#pl_i').textContent=f(t.inc);$('#pl_e').textContent=f(t.exp);const r=$('#pl_r');r.textContent=f(t.ret);r.style.color=t.ret<0?'#c0262f':'#0a7a3d'}
 function pl(k,v){P[k]=v;pDirty=true;plUpd()}function plr(j,k,v){P.exp[j][k]=v;pDirty=true;plUpd()}
 function pladd(){P.exp.push({u:uid(),n:'',a:''});pDirty=true;plDraw()}function pldel(j){P.exp.splice(j,1);pDirty=true;plDraw()}
 async function plSave(){const nv=v=>v===''||v==null?'':num(v),payload={ts:nv(P.ts),td:nv(P.td),tc:nv(P.tc),exp:P.exp.filter(r=>(r.n||'').trim()).map(r=>({u:r.u,n:r.n.trim(),a:nv(r.a)})),note:P.note,prep:$('#pwho').value,by:who(),at:Date.now()};
- const {error}=await sb.from('exp_docs').upsert({id:'pl_'+P.m,payload});if(error)return alert('Could not save: '+error.message);P.exp=payload.exp;P.by=payload.by;pDirty=false;plDraw();$('#pst').innerHTML='<span class="ok">Saved \u2713</span>';afterAction()}
-function plPrint(){const t=plT(),R=P.exp.filter(r=>(r.n||'').trim()),row=(n,a)=>`<tr><td>${esc(n)}</td><td class="pc">:</td><td>${a===''||a==null?'':f(a)}</td></tr>`;
- $('#sheet').innerHTML=`<div class="pr">${LH}<table class="plt"><tr><td colspan="3" class="plh">Calculated Profit &amp; Loss - ${plTitle(P.m)}</td></tr>${row('Total Sales',P.ts)}${row('Total Discounts on Sales',P.td)}${row('Total Commission on Sales',P.tc)}<tr class="pb"><td>Total Income</td><td class="pc">:</td><td class="pu">${f(t.inc)}</td></tr><tr><td colspan="3" class="pe">Expenses</td></tr>${R.map(r=>row(r.n,r.a)).join('')}<tr class="pb"><td>Total Expense</td><td class="pc">:</td><td class="pu">${f(t.exp)}</td></tr><tr class="pret"><td>Calculated Return</td><td class="pc">:</td><td>${f(t.ret)}</td></tr></table>
-<div class="pnote"><b>*Bank Charges</b><span>${esc(P.note)}</span></div><div class="pper">Date Period : ${plPeriod(P.m)}</div>${SIG1($('#pwho').value)}</div>`;
- const [y,mo]=P.m.split('-');window._pt='Profit & Loss '+MN[mo-1]+' '+y;printSheet()}
+ const {error}=await sb.from('exp_docs').upsert({id:plId(P.k,P.m),payload});if(error)return alert('Could not save: '+error.message);P.exp=payload.exp;P.by=payload.by;pDirty=false;plDraw();$('#pst').innerHTML='<span class="ok">Saved \u2713</span>';afterAction()}
+function plPrint(){const t=plT(),k=P.k,R=P.exp.filter(r=>(r.n||'').trim()&&num(r.a)!==0),rev=[['Total Sales',P.ts],['Total Discounts on Sales',P.td],['Total Commission on Sales',P.tc]].filter(x=>num(x[1])!==0),
+ amt=v=>{const n=num(v);return `<td class="a${n<0?' ng':''}">${f(n)}</td>`},row=(n,v)=>`<tr><td class="l">${esc(n)}</td><td class="c">:</td>${amt(v)}</tr>`,hasNote=k!=='tj'&&R.some(r=>r.n.trim().startsWith('*'));
+ $('#sheet').innerHTML=`<div class="pr">${k==='tj'?TLH:LH}<div class="plh">Calculated Profit &amp; Loss<small>${plTitle(P.m)}</small></div><div class="pcur">All amounts in AED</div>
+<table class="pl">${rev.map(x=>row(x[0],x[1])).join('')}<tr class="pt"><td class="l">Total Income</td><td class="c">:</td>${amt(t.inc)}</tr>${R.length?`<tr><td colspan="3" class="pe">Expenses</td></tr>${R.map(r=>row(r.n,r.a)).join('')}`:''}<tr class="pt"><td class="l">Total Expense</td><td class="c">:</td>${amt(t.exp)}</tr><tr class="pq ${t.ret<0?'neg':'pos'}"><td class="l">Calculated Return</td><td class="c">:</td>${amt(t.ret)}</tr></table>
+${hasNote?`<div class="pnote"><b>*Bank Charges</b><span>${esc(P.note)}</span></div>`:''}<div class="pper">Date Period : ${plPeriod(P.m)}</div>${SIG1($('#pwho').value)}</div>`;
+ const [y,mo]=P.m.split('-');window._pt=(k==='tj'?'Tawjeeh ':'')+'Profit & Loss '+MN[mo-1]+' '+y;printSheet()}
 /* ================= TAWJEEH: CLOSING ACCOUNT BALANCE ================= */
 let TB=null,cDirty=false;
 const TBN=[['ADIB',''],['PAYPRO WALLET',''],['CASHIER',''],['PETTY CASH',''],['TRUE LINE PAYABLE','Outstanding']],
