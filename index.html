@@ -41,7 +41,7 @@ const list=c=>Object.values(days).filter(d=>!c||d.cashier===c).sort((a,b)=>a.dat
 const prevClose=(c,date)=>{const p=list(c).filter(d=>d.date<date).pop();return p?p.closing:0};
 function calc(d){const n=d.notes.reduce((s,q,i)=>s+q*NOTES[i],0)+(d.reserved=+d.reserved||0),c=d.coins.reduce((s,q,i)=>s+q*COINS[i],0),o=d.out.reduce((s,v)=>s+v,0);
  d.notesTotal=n;d.coinsTotal=c;d.closing=n+c;d.outTotal=o;d.received=d.closing+o;d.collection=d.received-d.opening;d.erpDiff=(d.erp===''||d.erp==null)?null:Math.round((d.closing-d.erp)*100)/100;return d}
-function route(){const h=location.pathname.replace(/\/+$/,'').slice(1);view=CASH[h]?h:(h==='admin'||h==='shabeeb'?'admin':null);window._who=h==='shabeeb'?'Shabeeb':'';tab='entry';render()}
+function route(){const h=location.pathname.replace(/\/+$/,'').slice(1);view=CASH[h]?h:(h==='admin'||h==='shabeeb'?'admin':null);window._who=h==='shabeeb'?'Shabeeb':'';window._sec='';window._sub='';window._tb='';tab='entry';render()}
 function renderNav(){const l=[['','Home'],['asna','Asna Cash Book'],['thasleena','Thasleena Cash Book'],['admin','Admin Dashboard'],['shabeeb','Shabeeb']];
  $('#nav').innerHTML=CASH[view]?`<b style="margin-right:12px;font-size:26px">${CASH[view]} Cash Book</b>`:l.map(([h,t])=>`<a href="/${h}" class="${((view==='admin'&&window._who==='Shabeeb')?'shabeeb':(view||''))===h?'on':''}">${t}</a>`).join('');
  if(view&&CASH[view])$('#nav').innerHTML+=`<span style="flex:1"></span><button class="btn ${tab==='entry'?'p':''}" onclick="setTab('entry')">Amer Cashbook</button><button class="btn ${tab==='report'?'p':''}" onclick="setTab('report')">Reports</button><button class="btn ${tab==='exp'?'p':''}" onclick="setTab('exp')">Expense Sheet</button><button class="btn ${tab==='tl'||tab==='tlr'?'p':''}" onclick="setTab('tl')">Tawjeeh Cashbook</button>${view==='asna'?`<button class="btn ${tab==='bal'?'p':''}" onclick="setTab('bal')">Account Balance &amp; Sales Report</button>`:''}${view==='asna'?`<button class="btn ${tab==='admin'?'p':''}" onclick="setTab('admin')">Admin Dashboard</button>`:''}`}
@@ -52,7 +52,7 @@ function render(){window._corr=null;renderNav();setHeader();$('#msg').innerHTML=
  else if(view==='admin'||tab==='admin')admin();else if(tab==='tl')tlEntry();else if(tab==='bal')adminBal();else if(tab==='tlr')tlReport();else if(tab==='exp')expDay();else if(tab==='entry')entry(view);else report(view)}
 /* ---------- ENTRY ---------- */
 function entry(c){window._ec=c;const o=CASH[other(c)];
- $('#app').innerHTML=`<div class="noprint">${corrHtml()}<div class="card"><h2>${CASH[c]} · Daily Cash Book</h2><div class="ctl"><div><label>Date</label><input type="date" id="dt" value="${today()}"></div><div><label>Opening Balance</label><input type="text" inputmode="decimal" class="cm" step="0.01" id="op"></div>${c==='asna'?`<div><label>Prepared &amp; Checked By</label><select id="pb"><option>Asna</option><option>Nazik</option></select></div>`:''}<div style="flex:1"><span id="st" class="mu"></span></div></div>
+ $('#app').innerHTML=`<div class="noprint">${corrHtml()}<div class="card"><h2>${CASH[c]} · Daily Cash Book</h2><div class="ctl"><div><label>Date</label><input type="date" id="dt" value="${today()}"></div><div><label>Opening Balance</label><input type="text" inputmode="decimal" class="cm" step="0.01" id="op"></div>${c==='asna'?`<div><label>Prepared &amp; Checked By</label><select id="pb"><option>Asna</option><option>Nazik</option><option>Shabeeb</option></select></div>`:''}<div style="flex:1"><span id="st" class="mu"></span></div></div>
  <div id="vrb"></div><div class="g g2"><div><h3>Cash Denominations</h3><div class="sc"><table><tr><th>Currency</th><th>Qty</th><th>Amount</th></tr>${NOTES.map((v,i)=>`<tr><td>${v}</td><td><input type="text" inputmode="decimal" class="cm" data-int="1" min="0" id="n${i}" oninput="upd()"></td><td id="na${i}">0.00</td></tr>`).join('')}<tr><td>Reserved Amount</td><td><input type="text" inputmode="decimal" class="cm" step="0.01" min="0" id="rs" oninput="upd()"></td><td id="rsa">0.00</td></tr><tr><th>Total</th><th id="nq">0</th><th id="nt">0.00</th></tr></table></div></div>
  <div><h3>Coin Denominations</h3><div class="sc"><table><tr><th>Coin</th><th>Qty</th><th>Amount</th></tr>${COINS.map((v,i)=>`<tr><td>${v}</td><td><input type="text" inputmode="decimal" class="cm" data-int="1" min="0" id="c${i}" oninput="upd()"></td><td id="ca${i}">0.00</td></tr>`).join('')}<tr><th>Total</th><th id="cq">0</th><th id="ct">0.00</th></tr></table></div>
  <h3 style="margin-top:16px">Cash Closing Balance</h3><div class="row"><span>Closing balance</span><b class="big" id="cl">0.00</b></div></div></div></div>
@@ -62,7 +62,7 @@ function entry(c){window._ec=c;const o=CASH[other(c)];
 function load(c){eDirty=false;const dt=$('#dt').value,d=days[c+'_'+dt],sr=d||list(c).filter(x=>x.date<dt).pop();$('#sv').textContent='';
  $('#op').dataset.m='';$('#op').value=d?d.opening:prevClose(c,dt);
  NOTES.forEach((_,i)=>$('#n'+i).value=sr?sr.notes[i]||'':'');COINS.forEach((_,i)=>$('#c'+i).value=sr?sr.coins[i]||'':'');
- for(let i=0;i<5;i++)$('#o'+i).value=d?d.out[i]||'':'';$('#rs').value=sr?sr.reserved||'':'';$('#erp').value=d&&d.erp!=null?d.erp:'';if($('#nqb')){$('#nqb').value=d&&d.nqb!=null?d.nqb:'';$('#amb').value=d&&d.amb!=null?d.amb:''}$('#vrb').innerHTML=vrHtml(d);if($('#pb'))$('#pb').value=d&&d.preparedBy?d.preparedBy:'Asna';$('#rm').value=d?d.remarks||'':'';
+ for(let i=0;i<5;i++)$('#o'+i).value=d?d.out[i]||'':'';$('#rs').value=sr?sr.reserved||'':'';$('#erp').value=d&&d.erp!=null?d.erp:'';if($('#nqb')){$('#nqb').value=d&&d.nqb!=null?d.nqb:'';$('#amb').value=d&&d.amb!=null?d.amb:''}$('#vrb').innerHTML=vrHtml(d);if($('#pb'))$('#pb').value=d&&d.preparedBy?d.preparedBy:(window._who==='Shabeeb'?'Shabeeb':'Asna');$('#rm').value=d?d.remarks||'':'';
  $('#st').textContent=d?'Editing a saved entry for this date. Status: '+(d.verifiedBy?'Verified by '+d.verifiedBy:isSub(d)?'Submitted, waiting for verification':'Draft (not submitted yet)')+'.':'New entry. Opening balance and denominations are copied from the previous day; change them if the cash count differs.';fmtInputs();upd()}
 function cur(){const g=id=>num($(id).value);return calc({cashier:window._ec,submitted:0,erp:oq('#erp'),nqb:oq('#nqb'),amb:oq('#amb'),date:$('#dt').value,opening:g('#op'),reserved:g('#rs'),preparedBy:$('#pb')?$('#pb').value:CASH[window._ec],notes:NOTES.map((_,i)=>g('#n'+i)),coins:COINS.map((_,i)=>g('#c'+i)),out:[0,1,2,3,4].map(i=>g('#o'+i)),remarks:$('#rm').value.trim()})}
 function upd(){const d=cur();NOTES.forEach((v,i)=>$('#na'+i).textContent=f(d.notes[i]*v));COINS.forEach((v,i)=>$('#ca'+i).textContent=f(d.coins[i]*v));
@@ -71,7 +71,7 @@ function upd(){const d=cur();NOTES.forEach((v,i)=>$('#na'+i).textContent=f(d.not
 async function save(p,sub){if(!col)return alert('Not connected to the database.');const d=cur();if(!d.date)return alert('Pick a date.');if(sub){const miss=[];if(d.erp==='')miss.push('ERP Closing');if($('#nqb')){if(d.nqb==='')miss.push('NOQODI Closing Balance');if(d.amb==='')miss.push('AMWAL Closing Balance')}if(miss.length){$(d.erp===''?'#erp':(d.nqb===''?'#nqb':'#amb')).focus();return alert('Please fill the mandatory field(s) before submitting for verification: '+miss.join(', ')+'.')}}d.updated=Date.now();if(sub)d.submitted=Date.now();{const old=days[d.cashier+'_'+d.date];if(old&&old.vr)d.vr=old.vr.map(x=>x.open?{...x,open:false,doneAt:Date.now()}:x)}
  if(window._corr){const t=($('#ct')||{}).value;if(!t||!t.trim())return alert('Please type the remark for the cashier.');const by=$('#cv').value,o2=days[d.cashier+'_'+d.date];d.vr=[...(d.vr||[]),{by,text:t.trim(),at:Date.now(),open:false,corrected:true,was:o2?{closing:o2.closing,received:o2.received}:null}];d.verifiedBy=by;d.verifiedAt=today();d.submitted=(o2&&o2.submitted)||Date.now()}
 
- try{const {error}=await sb.from('cash_days').upsert({id:d.cashier+'_'+d.date,cashier:d.cashier,day:d.date,payload:d});if(error)throw error;days[d.cashier+'_'+d.date]=d;eDirty=false;$('#sv').textContent='Saved as draft ✓ – click Submit for Verification when it is final';$('#msg').innerHTML=vrBanner();if(window._corr){window._corr=null;tab=window._back||'entry';render();return}if(sub){$('#sv').textContent='Submitted for verification ✓';if(view==='asna'){window._at='flow';tab='admin';render();afterAction();return}}if(sub)sheet(d);else $('#sheet').innerHTML='';afterAction()}catch(e){alert('Could not save: '+(e.message||e.code))}}
+ try{const {error}=await sb.from('cash_days').upsert({id:d.cashier+'_'+d.date,cashier:d.cashier,day:d.date,payload:d});if(error)throw error;days[d.cashier+'_'+d.date]=d;eDirty=false;$('#sv').textContent='Saved as draft ✓ – click Submit for Verification when it is final';$('#msg').innerHTML=vrBanner();if(window._corr){window._corr=null;go('amer','daily','vf');return}if(sub){$('#sv').textContent='Submitted for verification ✓';if(isAdmin){go('amer','daily','vf');afterAction();return}}if(sub)sheet(d);else $('#sheet').innerHTML='';afterAction()}catch(e){alert('Could not save: '+(e.message||e.code))}}
 async function del(){const d=$('#dt').value,id=window._ec+'_'+d;if(!days[id])return;if(!confirm('Delete the entry for '+dmy(d)+'?'))return;try{const {error}=await sb.from('cash_days').delete().eq('id',id);if(error)throw error;delete days[id];load(window._ec);afterAction()}catch(e){alert('Could not delete: '+(e.message||e.code))}}
 function printSheet(){const t0=document.title;if(window._pt)document.title=window._pt;document.body.classList.add('ps');psPrepare();try{print()}catch(e){alert('Printing is blocked in this view. Use Download sheet, then print the file.')}setTimeout(()=>{document.body.classList.remove('ps');psClear();document.title=t0;afterAction()},1500)}
 async function dlSheet(){if(!dl)return alert('Download not available here.');const el=$('#sheet').cloneNode(true);el.querySelectorAll('.noprint').forEach(x=>x.remove());
@@ -116,7 +116,9 @@ const PRCSS=`.pr{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial,H
 .pr .mm{margin-bottom:14px}.pr .mm .mh{background:#f6d9b4;text-align:center;font-weight:700;font-size:13px;color:#1b1f1d}
 .pr .mm .gh th{background:#e4e8e6;color:#1b1f1d;text-transform:none;font-size:12px;text-align:center;letter-spacing:0}.pr .mm td:nth-child(2){text-align:left}.pr .mm td:first-child{text-align:center}
 .pr .mm .gt td{background:#e4e8e6;font-weight:700;color:#b3202a;border-top:2px solid #6b7771}
-.pr .sm{width:62%;margin:0 auto 14px}.pr .sm td:first-child{text-align:center;font-weight:700}.pr .sm td:last-child{color:#b3202a;font-weight:700;text-align:center}.pr .sm .gt td:first-child{color:#1b1f1d}`;
+.pr .sm{width:62%;margin:0 auto 14px}.pr .sm td:first-child{text-align:center;font-weight:700}.pr .sm td:last-child{color:#b3202a;font-weight:700;text-align:center}.pr .sm .gt td:first-child{color:#1b1f1d}
+.pr .plt{width:100%;border-collapse:collapse;margin-top:12px}.pr .plt td{border:1px solid #333;padding:3px 8px;text-align:center;font-size:12px;background:#fff;color:#111}.pr .plt .plh{font-size:15px;font-weight:700;font-style:italic;border:0;padding:8px 0}.pr .plt .pc{width:30px}.pr .plt .pb td{font-weight:700;font-style:italic}.pr .plt .pu{text-decoration:underline}.pr .plt .pe{font-weight:700;font-style:italic;text-decoration:underline;background:#f4f8f5}.pr .plt .pret td{font-weight:700;font-style:italic;color:#b3202a}.pr .plt .pret td:last-child{text-decoration:underline}
+.pr .pnote{display:flex;gap:16px;align-items:center;background:#ffff00;border:1px solid #333;padding:8px 12px;margin-top:14px;font-size:11px}.pr .pnote b{min-width:120px;text-align:center}.pr .pper{background:#9fc98f;border:1px solid #333;text-align:center;font-weight:700;padding:8px;margin-top:2px}`;
 document.head.insertAdjacentHTML('beforeend','<style>'+PRCSS+'</style>');
 function sheet(d){window._sd=d;window._pt=CASH[d.cashier]+' Cashbook '+dfn(d.date);const o=CASH[other(d.cashier)],nm=CASH[d.cashier],wd=new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'}),ref='TL-'+d.cashier.toUpperCase()+'-'+d.date.replace(/-/g,'');
  $('#sheet').innerHTML=`<div class="card"><div class="noprint" style="margin-bottom:10px">${isSub(d)?`<button class="btn p" onclick="printSheet()">Print</button> <button class="btn" onclick="dlSheet()">Download sheet (HTML)</button>`:`<span class="mu">Draft – submit for verification to enable printing.</span>`}</div>
@@ -159,10 +161,10 @@ async function xSave(){const {data,error}=await sb.from('exp_docs').select('payl
  const r=(data&&data.payload)||{},out={};
  for(const [k,bk] of [['ex','bex'],['ot','bot']]){const mu=new Set(X[k].map(x=>x.u)),bu=new Set(X[bk]);
   out[k]=[...X[k].filter(x=>!blank(x)).map(x=>({u:x.u,n:x.n,i:x.i,s:x.s,a:num(x.a)})),...(r[k]||[]).filter(x=>!mu.has(x.u)&&!bu.has(x.u))]}
- const {error:e2}=await sb.from('exp_docs').upsert({id:'day_'+X.date,payload:{date:X.date,ex:out.ex,ot:out.ot,by:CASH[view],at:Date.now()}});
+ const {error:e2}=await sb.from('exp_docs').upsert({id:'day_'+X.date,payload:{date:X.date,ex:out.ex,ot:out.ot,by:who(),at:Date.now()}});
  if(e2)return alert('Could not save: '+e2.message);await xLoad();$('#xs').innerHTML='<span class="ok">Saved \u2713</span> '+$('#xs').textContent}
 function xPrint(){const T=(k,t)=>{const L=X[k].filter(r=>!blank(r));return `<div class="tt" style="letter-spacing:.12em;font-size:12px;text-align:left;padding-left:10px">${t} \u2013 ${dmy(X.date)}</div><table><tr><th style="width:90px">JV/PV</th><th>Items</th><th style="width:90px">Source</th><th style="width:90px">Aed</th></tr>${L.map(r=>`<tr><td>${esc(r.n)}</td><td style="text-align:left">${esc(r.i)}</td><td>${esc(r.s)}</td><td>${f(r.a)}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:#666">No entries</td></tr>'}<tr class="tot"><td colspan="3" style="text-align:right">Total</td><td>${f(L.reduce((a,r)=>a+num(r.a),0))}</td></tr></table>`};
- $('#sheet').innerHTML=`<div class="pr">${LH}<div class="tt">EXPENSE &amp; TRANSACTION REPORT</div>${T('ex','Expense')}${T('ot','Other Transaction Report')}${SIG1(X.by||CASH[view])}</div>`;window._pt='Expense Report '+dfn(X.date);printSheet()}
+ $('#sheet').innerHTML=`<div class="pr">${LH}<div class="tt">EXPENSE &amp; TRANSACTION REPORT</div>${T('ex','Expense')}${T('ot','Other Transaction Report')}${SIG1(X.by||who())}</div>`;window._pt='Expense Report '+dfn(X.date);printSheet()}
 /* monthly expense sheet (admin) : 26th to 25th */
 function defP(){const [y,m,d]=today().split('-').map(Number);let Y=y,Mo=m;if(d>=26){Mo++;if(Mo>12){Mo=1;Y++}}return Y+'-'+pad(Mo)}
 function pRange(m){const [y,mo]=m.split('-').map(Number);return [(mo===1?y-1:y)+'-'+pad(mo===1?12:mo-1)+'-26',m+'-25']}
@@ -373,11 +375,11 @@ function ivEdit(id){window._ie=id;window._ivm='form';window._at='inv';admin()}
 function ivPrintId(id){ivView(id);setTimeout(printSheet,300)}function ivPdfId(id){ivView(id);setTimeout(invPdf,300)}
 async function ivDel(id){if(!confirm('Delete invoice '+(invs[id]?invs[id].no:id)+'?'))return;const {error}=await sb.from('exp_docs').delete().eq('id','inv_'+id);if(error)return alert('Could not delete: '+error.message);delete invs[id];admin()}
 /* comma formatting for all number boxes */
-const cf=s=>{const p=String(s).replace(/[^0-9.]/g,'').split('.');return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(p.length>1?'.'+p.slice(1).join('').slice(0,2):'')};
+const cf=(s,ng)=>{const m=ng&&/^\s*-/.test(String(s))?'-':'',p=String(s).replace(/[^0-9.]/g,'').split('.');return m+p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(p.length>1?'.'+p.slice(1).join('').slice(0,2):'')};
 const pad2=s=>String(s).trim()===''?'':f(s);
-function fmtInputs(){document.querySelectorAll('input.cm').forEach(el=>{const v=(el.dataset.int||el===document.activeElement)?cf(el.value):pad2(el.value);if(v!==el.value)el.value=v})}
+function fmtInputs(){document.querySelectorAll('input.cm').forEach(el=>{const v=(el.dataset.int||el===document.activeElement)?cf(el.value,el.dataset.neg):pad2(el.value);if(v!==el.value)el.value=v})}
 document.addEventListener('focusout',e=>{const el=e.target;if(el&&el.classList&&el.classList.contains('cm')&&!el.dataset.int){const v=pad2(el.value);if(v!==el.value)el.value=v}},true);
-document.addEventListener('input',e=>{const el=e.target;if(!el.classList||!el.classList.contains('cm'))return;const v=el.value,c=cf(v);if(c===v)return;const left=v.slice(0,el.selectionStart).replace(/,/g,'').length;el.value=c;let n=0,i=0;for(;i<c.length&&n<left;i++)if(c[i]!==',')n++;try{el.setSelectionRange(i,i)}catch(x){}},true);
+document.addEventListener('input',e=>{const el=e.target;if(!el.classList||!el.classList.contains('cm'))return;const v=el.value,c=cf(v,el.dataset.neg);if(c===v)return;const left=v.slice(0,el.selectionStart).replace(/,/g,'').length;el.value=c;let n=0,i=0;for(;i<c.length&&n<left;i++)if(c[i]!==',')n++;try{el.setSelectionRange(i,i)}catch(x){}},true);
 new MutationObserver(fmtInputs).observe(document.getElementById('app'),{childList:true,subtree:true});
 /* ---------- ERP CLOSING / DIFFERENCE ---------- */
 const diffMsg=(d,p)=>{if(d.erp===undefined||d.erp===''||d.erp==null||d.erpDiff==null)return '<span class="mu">Enter ERP closing</span>';const x=d.erpDiff,g=p?'#0a7a3d':'var(--ac)',r=p?'#c0262f':'var(--ac2)';return x>0?`<b style="color:${g}">Excess cash: AED ${f(x)}</b>`:x<0?`<b style="color:${r}">Closing amount is less by AED ${f(-x)}</b>`:`<b style="color:${g}">Tallied \u2713</b>`},
@@ -423,5 +425,118 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const dl={save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/plain'}));a.download=filename;a.click()}};
 async function loadDays(){const {data,error}=await sb.from('cash_days').select('id,payload');if(error){$('#msg').innerHTML='<div class="warn">Could not load data: '+esc(error.message)+'</div>';return}days={};data.forEach(r=>{const v=r.payload;if(v&&v.notes){if(v.out.length===7){v.out=v.out.slice(1);calc(v)}if(v.out.length===6)v.out=v.out.filter((_,i)=>i!==1);days[r.id]=v}})}
 async function boot(){isAdmin=['/admin','/asna','/shabeeb'].includes(location.pathname.replace(/\/+$/,''));col=true;conn=true;await loadDays();await loadT();await loadInv();route();setInterval(autoRefresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoRefresh()})}
+/* ================= NAVIGATION: AMER / TAWJEEH THUMBNAILS ================= */
+document.head.insertAdjacentHTML('beforeend','<style>.nav .crumb{border:0;background:none;padding:2px 4px;font-weight:600;color:var(--ac);cursor:pointer;font:inherit}.nav .sep{color:var(--mu)}.nav .tb{border-radius:10px}</style>');
+const SECN={amer:'AMER',tawjeeh:'TAWJEEH'},SUBN={daily:'Daily Activity',monthly:'Monthly Activity',dtc:'DTC Invoice'},
+ TABN={cb:'Cash Book',rp:'Reports',ex:'Daily Expense Sheet',ab:'Account Balance & Sales Report',vf:'Verification',me:'Monthly Expense Sheet',pl:'Profit & Loss',tc:'Cashbook',tr:'Reports',tb:'Closing Account Balance'},
+ userName=()=>CASH[view]||window._who||'Admin',bk=()=>CASH[view]?view:'asna';
+function tabsFor(S,B){if(S==='tawjeeh')return['tc','tr','tb'];if(B==='daily')return view==='thasleena'?['cb','rp','ex']:['cb','rp','ex','ab','vf'];if(B==='monthly')return['me','pl'];return[]}
+function go(S,B,T){window._sec=S||'';window._sub=B||'';window._tb=T||'';render()}
+const navInsert=()=>{if(view&&!$('#nb'))$('#app').insertAdjacentHTML('afterbegin',adminTabs())};
+function adminTabs(){const S=window._sec||'',B=window._sub||'',T=window._tb||'',cr=[[userName(),"go('','','')"]];
+ if(S)cr.push([SECN[S],S==='tawjeeh'?"go('tawjeeh','','tc')":(view==='thasleena'?"go('amer','daily','cb')":"go('amer','','')")]);
+ if(S==='amer'&&B&&view!=='thasleena')cr.push([SUBN[B],B==='daily'?"go('amer','daily','cb')":B==='monthly'?"go('amer','monthly','me')":"go('amer','dtc','')"]);
+ const tabs=tabsFor(S,B);
+ return `<div id="nb" class="noprint" style="margin:0 0 14px"><div class="nav" style="margin:0 0 8px">${cr.map((c,i)=>`${i?'<span class="sep">\u203a</span>':''}<button class="crumb" onclick="${c[1]}">${esc(c[0])}</button>`).join('')}</div>${tabs.length?`<div class="nav" style="margin:0">${tabs.map(k=>`<button class="btn tb ${T===k?'p':''}" onclick="go('${S}','${B}','${k}')">${TABN[k].replace('&','&amp;')}</button>`).join('')}</div>`:''}</div>`}
+function admin(){render()}
+function setTab(){}function setAT(){}
+function tlSub(){return ''}
+function renderNav(){if(!view){$('#nav').innerHTML=[['','Home'],['asna','Asna'],['thasleena','Thasleena'],['admin','Admin'],['shabeeb','Shabeeb']].map(([h,t])=>`<a href="/${h}" class="${h===''?'on':''}">${t}</a>`).join('')}else $('#nav').innerHTML=`<b style="font-size:26px">${esc(userName())}</b>`}
+function setHeader(){const on=window._sec==='tawjeeh'&&!!view,a=$('#hl'),b=$('#hr'),n=$('#hn');if(!a)return;a.src=on?'/logo-tawjeeh.png':'/logo-amer.png';b.src=on?'/logo-trueline.png':'/logo-truelink.png';n.textContent=on?TLN:'True Link Government Transaction Center LLC'}
+function thumbs(S){const c=(t,sub,a)=>`<div class="card lk" style="cursor:pointer" onclick="${a}"><b>${t}</b><span class="mu">${sub}</span></div>`;let h='';
+ if(!S)h=c('AMER','Daily and monthly activity',view==='thasleena'?"go('amer','daily','cb')":"go('amer','','')")+c('TAWJEEH','Cashbook, reports and closing balance',"go('tawjeeh','','tc')");
+ else{h=c('DAILY ACTIVITY','Cash book, reports, expense sheet, balances, verification',"go('amer','daily','cb')")+c('MONTHLY ACTIVITY','Monthly expense sheet and profit &amp; loss',"go('amer','monthly','me')");
+  if(view==='admin')h+=c('DTC INVOICE','Create and print tax invoices',"window._ivm='form';window._ie=null;go('amer','dtc','')")}
+ $('#app').innerHTML=`<div class="g g4">${h}</div>`}
+function ivNew(){window._ie=null;window._ivm='form';render()}
+function ivList(){window._ivm='list';render()}
+function ivEdit(id){window._ie=id;window._ivm='form';render()}
+function goDay(dt){go('amer','daily','cb');$('#dt').value=dt;load(window._ec)}
+function correctDay(id){const d=days[id];if(!d)return;window._corr=id;entry(d.cashier);$('#dt').value=d.date;$('#dt').disabled=true;load(d.cashier);navInsert()}
+function cancelCorr(){window._corr=null;go('amer','daily','vf')}
+function render(){window._corr=null;renderNav();setHeader();
+ $('#msg').innerHTML=vrBanner()+(conn?'':'<div class="warn">Not connected to the database. Please check your internet connection and the settings in config.js.</div>');
+ if(!view){$('#app').innerHTML=`<div class="g g4"><a class="card lk" href="/asna"><b>Asna</b><span class="mu">Cashier cash book, entry and reports</span></a><a class="card lk" href="/thasleena"><b>Thasleena</b><span class="mu">Cashier cash book, entry and reports</span></a><a class="card lk" href="/admin"><b>Admin</b><span class="mu">Cash flow dashboard</span></a><a class="card lk" href="/shabeeb"><b>Shabeeb</b><span class="mu">Approvals and dashboard</span></a></div>`;return}
+ let S=window._sec||'',B=window._sub||'',T=window._tb||'';
+ if(view==='thasleena'&&S==='amer')B='daily';
+ if(S==='amer'&&B==='dtc'&&view!=='admin')B='';
+ if(S==='amer'&&B==='monthly'&&!isAdmin)B='';
+ if(S==='amer'&&B==='daily'&&!tabsFor('amer','daily').includes(T))T='cb';
+ if(S==='amer'&&B==='monthly'&&!['me','pl'].includes(T))T='me';
+ if(S==='tawjeeh'&&!['tc','tr','tb'].includes(T))T='tc';
+ window._sec=S;window._sub=B;window._tb=T;
+ if(!S)thumbs('');else if(S==='amer'&&!B)thumbs('amer');
+ else if(S==='amer'&&B==='daily'){if(T==='cb')entry(bk());else if(T==='rp')report(bk());else if(T==='ex')expDay();else if(T==='ab')adminBal();else adminFlow()}
+ else if(S==='amer'&&B==='monthly'){if(T==='pl')plView();else adminExp()}
+ else if(S==='amer'&&B==='dtc'){if(window._ivm==='list')invList();else invForm()}
+ else if(S==='tawjeeh'){if(T==='tr')tlReport();else if(T==='tb')tcbView();else tlEntry()}
+ navInsert()}
+async function autoRefresh(){if(document.hidden||window._corr||!view)return;try{await loadDays();const sh=$('#sheet'),open=sh&&sh.innerHTML,S=window._sec||'',B=window._sub||'',T=window._tb||'';
+ if(S==='amer'&&B==='daily'){if(T==='cb'){if(!eDirty&&$('#dt')&&!$('#dt').disabled){const sv=$('#sv').textContent;load(window._ec);$('#sv').textContent=sv}}else if(T==='rp'){if(!open)rp(bk())}else if(T==='ex'){if(!xDirty)xLoad()}else if(T==='ab'){if(!bDirty&&!open)bLoad()}else if(T==='vf'){if(!open)ad()}}
+ else if(S==='amer'&&B==='monthly'){if(T==='pl'){if(!pDirty&&!open)plLoad()}else if(!mDirty&&!open)mLoad()}
+ else if(S==='amer'&&B==='dtc'){await loadInv();if(window._ivm==='list'&&!open)render()}
+ else if(S==='tawjeeh'){await loadT();if(T==='tr'){if(!open)tlRp()}else if(T==='tb'){if(!cDirty&&!open)tcbLoad()}else if(!tDirty&&$('#tdt')){const sv=$('#tsv').textContent;tlLoad();$('#tsv').textContent=sv}}
+ $('#rf').textContent='Auto-refresh every 30 s \u00b7 last updated '+new Date().toLocaleTimeString('en-GB')}catch(e){}}
+/* ================= PROFIT & LOSS (monthly) ================= */
+let P=null,pDirty=false;
+const PLE=['Govt. Fees','Total Salary','Bonus to Staffs','Total GPSSA','DEWA','Etisalat','Office Rent','Office Related License or Renewals','Office Maintenance','Staff Visa Exp','Pantry & Other Office Exp','Amer GCC Employees Pension Deduction','Fuel & Vehicle Service & Parking','IT (Including Monthly Calculated AMC)','*Bank Charges','DTC Typing Commission','Amer Franchise Fee'],
+ PLN='Include transaction bank charges and income from Credit Card transactions',
+ plTitle=m=>{const [y,mo]=m.split('-');return MN[mo-1].toUpperCase()+' '+y},
+ plPeriod=m=>{const [a,b]=pRange(m),fm=s=>{const [y,mo,d]=s.split('-');return (+d)+' '+MN[mo-1]+' '+y};return fm(a)+' to '+fm(b)},
+ plT=()=>{const i=num(P.ts)-num(P.td)-num(P.tc),e=P.exp.reduce((x,r)=>x+num(r.a),0);return {inc:i,exp:e,ret:i-e}};
+function plView(){const m=window._pm=window._pm||defP();
+ $('#app').innerHTML=`<div class="card"><h2>Profit &amp; Loss</h2><div class="ctl noprint"><div><label>Period ending (month)</label><input type="month" id="pm" value="${m}"></div><div><label>Prepared By</label><select id="pwho" onchange="pDirty=true">${vOpts()}</select></div><button class="btn p" onclick="plSave()">Save</button><button class="btn" onclick="plPrint()">Print</button><button class="btn" onclick="plLoad()">Refresh</button><span id="pst" class="mu"></span></div><div id="pb"></div></div><div id="sheet"></div>`;
+ $('#pm').onchange=()=>{if(pDirty&&!confirm('Discard unsaved changes?')){$('#pm').value=window._pm;return}plLoad()};plLoad()}
+async function plLoad(){const m=$('#pm').value;if(!m)return;window._pm=m;$('#pst').textContent='Loading\u2026';
+ const r=await sb.from('exp_docs').select('payload').eq('id','pl_'+m).maybeSingle();if(r.error){$('#pst').textContent='Could not load: '+r.error.message;return}
+ const p=r.data&&r.data.payload;
+ if(p)P={m,ts:p.ts,td:p.td,tc:p.tc,exp:p.exp.map(x=>({...x})),note:p.note,by:p.by};
+ else{const l=await sb.from('exp_docs').select('payload').like('id','pl_%').lt('id','pl_'+m).order('id',{ascending:false}).limit(1),q=l.data&&l.data[0]&&l.data[0].payload;
+  P={m,ts:'',td:'',tc:'',exp:(q?q.exp.map(x=>x.n):PLE).map(n=>({u:uid(),n,a:''})),note:q?q.note:PLN}}
+ pDirty=false;plDraw();if(p&&p.prep)$('#pwho').value=p.prep;$('#pst').textContent=p?'Last saved by '+p.by+' \u00b7 '+new Date(p.at).toLocaleString('en-GB'):'Not saved yet for this period. Fill in the figures and click Save.'}
+function plDraw(){const t=plT(),bi='type="text" inputmode="decimal" class="cm" data-neg="1"';
+ $('#pb').innerHTML=`<h3 style="${OH}">Calculated Profit &amp; Loss \u00b7 ${plTitle(P.m)}</h3><p class="mu" style="text-align:center">Date period: <b>${plPeriod(P.m)}</b></p><div class="sc"><table style="max-width:780px;margin:0 auto">
+<tr><td>Total Sales</td><td style="width:180px"><input ${bi} value="${P.ts}" oninput="pl('ts',this.value)"></td><td style="width:50px"></td></tr>
+<tr><td>Total Discounts on Sales</td><td><input ${bi} value="${P.td}" oninput="pl('td',this.value)"></td><td></td></tr>
+<tr><td>Total Commission on Sales</td><td><input ${bi} value="${P.tc}" oninput="pl('tc',this.value)"></td><td></td></tr>
+<tr><td style="font-weight:700">Total Income</td><td id="pl_i" style="font-weight:700;text-align:right">${f(t.inc)}</td><td></td></tr>
+<tr><td colspan="3" style="text-align:center;font-weight:700;text-decoration:underline">Expenses</td></tr>
+${P.exp.map((r,j)=>`<tr><td><input value="${esc(r.n)}" oninput="plr(${j},'n',this.value)" style="text-align:left"></td><td><input ${bi} value="${r.a}" oninput="plr(${j},'a',this.value)"></td><td><button class="btn d" onclick="pldel(${j})">\u2715</button></td></tr>`).join('')}
+<tr><td style="font-weight:700">Total Expense</td><td id="pl_e" style="font-weight:700;text-align:right">${f(t.exp)}</td><td></td></tr>
+<tr><td style="font-weight:700">Calculated Return</td><td id="pl_r" style="font-weight:700;text-align:right;color:${t.ret<0?'#c0262f':'#0a7a3d'}">${f(t.ret)}</td><td></td></tr></table></div>
+<button class="btn" style="margin-top:8px" onclick="pladd()">+ Add expense row</button><div class="ctl" style="margin-top:12px"><div style="flex:1;min-width:260px"><label>Note for *Bank Charges (yellow box on the print)</label><input value="${esc(P.note)}" oninput="pl('note',this.value)"></div></div>`}
+function plUpd(){const t=plT();$('#pl_i').textContent=f(t.inc);$('#pl_e').textContent=f(t.exp);const r=$('#pl_r');r.textContent=f(t.ret);r.style.color=t.ret<0?'#c0262f':'#0a7a3d'}
+function pl(k,v){P[k]=v;pDirty=true;plUpd()}function plr(j,k,v){P.exp[j][k]=v;pDirty=true;plUpd()}
+function pladd(){P.exp.push({u:uid(),n:'',a:''});pDirty=true;plDraw()}function pldel(j){P.exp.splice(j,1);pDirty=true;plDraw()}
+async function plSave(){const nv=v=>v===''||v==null?'':num(v),payload={ts:nv(P.ts),td:nv(P.td),tc:nv(P.tc),exp:P.exp.filter(r=>(r.n||'').trim()).map(r=>({u:r.u,n:r.n.trim(),a:nv(r.a)})),note:P.note,prep:$('#pwho').value,by:who(),at:Date.now()};
+ const {error}=await sb.from('exp_docs').upsert({id:'pl_'+P.m,payload});if(error)return alert('Could not save: '+error.message);P.exp=payload.exp;P.by=payload.by;pDirty=false;plDraw();$('#pst').innerHTML='<span class="ok">Saved \u2713</span>';afterAction()}
+function plPrint(){const t=plT(),R=P.exp.filter(r=>(r.n||'').trim()),row=(n,a)=>`<tr><td>${esc(n)}</td><td class="pc">:</td><td>${a===''||a==null?'':f(a)}</td></tr>`;
+ $('#sheet').innerHTML=`<div class="pr">${LH}<table class="plt"><tr><td colspan="3" class="plh">Calculated Profit &amp; Loss - ${plTitle(P.m)}</td></tr>${row('Total Sales',P.ts)}${row('Total Discounts on Sales',P.td)}${row('Total Commission on Sales',P.tc)}<tr class="pb"><td>Total Income</td><td class="pc">:</td><td class="pu">${f(t.inc)}</td></tr><tr><td colspan="3" class="pe">Expenses</td></tr>${R.map(r=>row(r.n,r.a)).join('')}<tr class="pb"><td>Total Expense</td><td class="pc">:</td><td class="pu">${f(t.exp)}</td></tr><tr class="pret"><td>Calculated Return</td><td class="pc">:</td><td>${f(t.ret)}</td></tr></table>
+<div class="pnote"><b>*Bank Charges</b><span>${esc(P.note)}</span></div><div class="pper">Date Period : ${plPeriod(P.m)}</div>${SIG1($('#pwho').value)}</div>`;
+ const [y,mo]=P.m.split('-');window._pt='Profit & Loss '+MN[mo-1]+' '+y;printSheet()}
+/* ================= TAWJEEH: CLOSING ACCOUNT BALANCE ================= */
+let TB=null,cDirty=false;
+const TBN=[['ADIB',''],['PAYPRO WALLET',''],['CASHIER',''],['PETTY CASH',''],['TRUE LINE PAYABLE','Outstanding']],
+ dlab=s=>{const [y,m,d]=s.split('-');return (+d)+'-'+MN[m-1].slice(0,3)+'-'+y.slice(2)};
+function tcbView(){const d=window._cd=window._cd||today();
+ $('#app').innerHTML=`<div class="card"><h2>Closing Account Balance</h2><div class="ctl noprint"><div><label>Date</label><input type="date" id="cd" value="${d}"></div><button class="btn p" onclick="tcbSave()">Save</button><button class="btn" onclick="tcbPrint()">Print</button><button class="btn" onclick="tcbCsv()">Download CSV</button><button class="btn" onclick="tcbLoad()">Refresh</button><span id="cst" class="mu"></span></div><div id="tcbb"></div></div><div id="sheet"></div>`;
+ $('#cd').onchange=()=>{if(cDirty&&!confirm('Discard unsaved changes?')){$('#cd').value=window._cd;return}tcbLoad()};tcbLoad()}
+async function tcbLoad(){const dt=$('#cd').value;if(!dt)return;window._cd=dt;$('#cst').textContent='Loading\u2026';
+ const g=await sb.from('exp_docs').select('payload').eq('id','tcb_'+dt).maybeSingle();if(g.error){$('#cst').textContent='Could not load: '+g.error.message;return}
+ const p=g.data&&g.data.payload;let rows;
+ if(p)rows=p.rows.map(r=>({...r}));
+ else{const l=await sb.from('exp_docs').select('payload').like('id','tcb_%').lt('id','tcb_'+dt).order('id',{ascending:false}).limit(1),q=l.data&&l.data[0]&&l.data[0].payload;
+  rows=(q?q.rows.map(r=>[r.n,r.t||'']):TBN).map(([n,t])=>({u:uid(),n,a:'',t}));
+  const k=Object.keys(tdays).filter(x=>x<=dt).sort().pop(),c=rows.find(r=>/^\s*cashier\s*$/i.test(r.n));if(c&&k)c.a=tdays[k].closing}
+ TB={date:dt,rows,by:p&&p.by};cDirty=false;tcbDraw();$('#cst').textContent=p?'Last saved by '+p.by+' \u00b7 '+new Date(p.at).toLocaleString('en-GB'):'Not saved yet for this date. The CASHIER balance is taken from the Tawjeeh cash book closing; change anything if needed.'}
+function tcbDraw(){$('#tcbb').innerHTML=`<h3 style="${OH}">Closing Account Balance \u00b7 ${dlab(TB.date)}</h3><div class="sc"><table><tr><th>Bank</th><th style="width:190px">Balance (AED)</th><th style="width:190px">Note</th><th style="width:50px"></th></tr>${TB.rows.map((r,j)=>`<tr><td><input value="${esc(r.n)}" oninput="tcs(${j},'n',this.value)" style="text-align:left"></td><td><input type="text" inputmode="decimal" class="cm" value="${r.a}" oninput="tcs(${j},'a',this.value)"></td><td><input value="${esc(r.t||'')}" oninput="tcs(${j},'t',this.value)" style="text-align:left" placeholder="e.g. Outstanding"></td><td><button class="btn d" onclick="tcdel(${j})">\u2715</button></td></tr>`).join('')}</table></div><button class="btn" style="margin-top:8px" onclick="tcadd()">+ Add row</button>`}
+function tcs(j,k,v){TB.rows[j][k]=v;cDirty=true}function tcadd(){TB.rows.push({u:uid(),n:'',a:'',t:''});cDirty=true;tcbDraw()}function tcdel(j){TB.rows.splice(j,1);cDirty=true;tcbDraw()}
+async function tcbSave(){const payload={date:TB.date,rows:TB.rows.filter(r=>(r.n||'').trim()).map(r=>({u:r.u,n:r.n.trim(),a:r.a===''||r.a==null?'':num(r.a),t:(r.t||'').trim()})),by:who(),at:Date.now()};
+ const {error}=await sb.from('exp_docs').upsert({id:'tcb_'+TB.date,payload});if(error)return alert('Could not save: '+error.message);TB.rows=payload.rows;TB.by=payload.by;cDirty=false;tcbDraw();$('#cst').innerHTML='<span class="ok">Saved \u2713</span>';afterAction()}
+function tcbPrint(){const R=TB.rows.filter(r=>(r.n||'').trim());
+ $('#sheet').innerHTML=`<div class="pr">${TLH}<div class="tt">CLOSING ACCOUNT BALANCE</div><p style="text-align:center;margin:0 0 10px;font-weight:700;font-size:13px">${dlab(TB.date)}</p><table><tr><th style="text-align:center">Bank</th><th style="width:30px">:</th><th style="text-align:center">Balance</th></tr>${R.map((r,i)=>`<tr${i%2?' class="alt"':''}><td style="text-align:center">${esc(r.n)}</td><td style="text-align:center">:</td><td style="text-align:center">${r.a===''||r.a==null?'':'AED '+f(r.a)}${r.t?' ( '+esc(r.t)+' )':''}</td></tr>`).join('')}</table>${SIG1(TB.by||who())}</div>`;
+ window._pt='Tawjeeh Closing Account Balance '+dfn(TB.date);printSheet()}
+async function tcbCsv(){const t=[['Bank','Balance (AED)','Note'],...TB.rows.filter(r=>(r.n||'').trim()).map(r=>[r.n,r.a===''?'':num(r.a),r.t||''])].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');await dl.save({filename:'Tawjeeh Closing Account Balance '+dfn(TB.date)+'.csv',data:t})}
+
 boot();
 </script></body></html>
