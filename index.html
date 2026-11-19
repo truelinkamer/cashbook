@@ -330,7 +330,7 @@ const INVCSS=`.inv{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial
 .inv .itb tr.tr td{background:#d5ecf4;font-weight:700;font-size:12px;border-top:2px solid #2a7aa8}.inv .itb tr.tr td.dk{background:#a9d7e8}
 .inv .isum{width:44%;margin:12px 0 0 auto}.inv .isum td{border:1px solid #b8d3df;padding:7px 10px;font-size:11.5px;background:#f4f9fc;color:#333}.inv .isum td:last-child{text-align:right;background:#fff;font-weight:600;color:#1b1f1d}.inv .isum tr.gt td{background:#2a7aa8;color:#fff;font-weight:700;font-size:13px}
 .inv .iw{margin-top:12px;padding:8px 12px;background:#f4f9fc;border:1px solid #cfe3ec;border-radius:6px;font-size:11.5px}.inv .iw b{color:#2a5f7d}
-.inv .if{display:flex;justify-content:space-between;margin-top:38px;gap:40px}.inv .if div{flex:1;text-align:center;border-top:1px solid #1b1f1d;padding-top:5px;font-size:10.5px;color:#555;text-transform:uppercase;letter-spacing:.06em}
+.inv .if{display:flex;margin-top:40px}.inv .ib{width:260px;text-align:center}.inv .isig{display:block;border-bottom:1px solid #1b1f1d;padding:0 6px 2px;min-height:34px;font:italic 22px "Segoe Script","Brush Script MT",cursive;color:#1b1f1d}.inv .ib i{display:block;font-style:normal;font-size:10.5px;color:#555;text-transform:uppercase;letter-spacing:.07em;margin-top:5px}
 .inv .in{margin-top:16px;text-align:center;color:#6b7771;font-size:10px}`;
 document.head.insertAdjacentHTML('beforeend','<style>'+INVCSS+'</style>');
 let invs={},V=null;
@@ -351,16 +351,16 @@ function invHtml(d){const R=d.rows.filter(r=>r.d&&num(r.q)>0),T=ivTot(R);
 <table class="itb"><tr><th>No</th><th>Service Description</th><th>Quantity</th><th>Unit Cost</th><th>Taxable Amount</th><th>Tax Amount</th><th>Total Amount</th></tr>${R.map((r,i)=>{const x=ivCalc(r);return `<tr><td>${i+1}</td><td>${esc(r.d)}</td><td>${f0(r.q)}</td><td>${f(r.c)}</td><td>${f(x.tx)}</td><td>${f(x.tax)}</td><td class="dk">${f(x.tt)}</td></tr>`}).join('')}<tr class="tr"><td></td><td>Total</td><td></td><td></td><td>${f(T.tx)}</td><td>${f(T.tax)}</td><td class="dk">${f(T.tt)}</td></tr></table>
 <table class="isum"><tr><td>Total Amount Without VAT</td><td>${f(T.tx)}</td></tr><tr><td>Total VAT</td><td>${f(T.tax)}</td></tr><tr class="gt"><td>TOTAL (AED)</td><td>${f(T.tt)}</td></tr></table>
 <div class="iw"><b>Amount in words:</b> ${words(T.tt)}</div>
-<div class="if"><div>Prepared By</div><div>Authorised Signatory</div></div>
+<div class="if"><div class="ib"><span class="isig">${esc(d.prep||'Shabeeb')}</span><i>Prepared By</i></div></div>
 <div class="in">This is a computer generated tax invoice. All amounts are in UAE Dirhams (AED).</div></div>`}
 function invSub(){const m=window._ivm||'form';return `<div class="nav noprint" style="margin:0 0 12px"><button class="btn ${m==='form'?'p':''}" onclick="ivNew()">New Invoice</button><button class="btn ${m==='list'?'p':''}" onclick="ivList()">Saved Invoices</button></div>`}
 function ivList(){window._ivm='list';window._at='inv';admin()}
 function ivNew(){window._ie=null;window._ivm='form';window._at='inv';admin()}
 function invForm(){const b=window._ie&&invs[window._ie];
- if(b)V={...b,rows:b.rows.map(r=>({u:uid(),...r}))};
- else{const l=latestInv();V={no:nextNo(),date:today(),trn:l?l.trn:'100560920900003',cust:l?l.cust:'DUBAI TAXI COMPANY PJSC',ctrn:l?l.ctrn:'104779935600003',rows:(l?l.rows.map(r=>[r.d,r.c,r.v]):INVDEF).map(x=>({u:uid(),d:x[0],q:'',c:x[1],v:x[2]}))}}
+ if(b)V={...b,prep:b.prep||'Shabeeb',rows:b.rows.map(r=>({u:uid(),...r}))};
+ else{const l=latestInv();V={prep:'Shabeeb',no:nextNo(),date:today(),trn:l?l.trn:'100560920900003',cust:l?l.cust:'DUBAI TAXI COMPANY PJSC',ctrn:l?l.ctrn:'104779935600003',rows:(l?l.rows.map(r=>[r.d,r.c,r.v]):INVDEF).map(x=>({u:uid(),d:x[0],q:'',c:x[1],v:x[2]}))}}
  ivDraw()}
-function ivDraw(){$('#app').innerHTML=`<div class="noprint">${invSub()}<div class="card"><h2>DTC Invoice${window._ie?' \u00b7 editing '+esc(V.no):''}</h2><div class="ctl"><div><label>Invoice No.</label><input value="${esc(V.no)}" oninput="ivf('no',this.value)" id="iv_no"></div><div><label>Date</label><input type="date" value="${V.date}" oninput="ivf('date',this.value)"></div><div><label>Company TRN</label><input value="${esc(V.trn)}" oninput="ivf('trn',this.value)"></div></div><div class="ctl"><div style="flex:1;min-width:240px"><label>Customer/Company</label><input value="${esc(V.cust)}" oninput="ivf('cust',this.value)"></div><div><label>Customer TRN</label><input value="${esc(V.ctrn)}" oninput="ivf('ctrn',this.value)"></div></div>
+function ivDraw(){$('#app').innerHTML=`<div class="noprint">${invSub()}<div class="card"><h2>DTC Invoice${window._ie?' \u00b7 editing '+esc(V.no):''}</h2><div class="ctl"><div><label>Invoice No.</label><input value="${esc(V.no)}" oninput="ivf('no',this.value)" id="iv_no"></div><div><label>Date</label><input type="date" value="${V.date}" oninput="ivf('date',this.value)"></div><div><label>Company TRN</label><input value="${esc(V.trn)}" oninput="ivf('trn',this.value)"></div><div><label>Prepared By</label><select onchange="ivf('prep',this.value)"><option${V.prep==='Asna'?'':' selected'}>Shabeeb</option><option${V.prep==='Asna'?' selected':''}>Asna</option></select></div></div><div class="ctl"><div style="flex:1;min-width:240px"><label>Customer/Company</label><input value="${esc(V.cust)}" oninput="ivf('cust',this.value)"></div><div><label>Customer TRN</label><input value="${esc(V.ctrn)}" oninput="ivf('ctrn',this.value)"></div></div>
 <div class="sc"><table><tr><th>No</th><th>Service Description</th><th style="width:110px">Quantity</th><th style="width:130px">Unit Cost</th><th style="width:90px">VAT</th><th>Taxable</th><th>Tax</th><th>Total</th><th style="width:44px"></th></tr>${V.rows.map((r,j)=>`<tr><td>${j+1}</td><td><input value="${esc(r.d)}" oninput="ivs(${j},'d',this.value)" style="text-align:left"></td><td><input type="text" inputmode="decimal" class="cm" data-int="1" value="${r.q}" oninput="ivs(${j},'q',this.value)"></td><td><input type="text" inputmode="decimal" class="cm" value="${r.c}" oninput="ivs(${j},'c',this.value)"></td><td><select onchange="ivs(${j},'v',this.value)"><option value="0"${+r.v?'':' selected'}>0%</option><option value="5"${+r.v?' selected':''}>5%</option></select></td>${+r.v?`<td id="ivx${j}"></td>`:`<td><input type="text" inputmode="decimal" class="cm" id="ivx${j}" oninput="ivxs(${j},this.value)" title="Editable for 0% VAT rows. Clear it to calculate from quantity x unit cost."></td>`}<td id="ivt${j}"></td><td id="ivz${j}"></td><td><button class="btn d" onclick="ivdel(${j})">\u2715</button></td></tr>`).join('')}</table></div><button class="btn" style="margin-top:8px" onclick="ivadd()">+ Add row</button>
 <p style="margin-top:14px"><button class="btn p" onclick="ivSave()">Save Invoice</button> <button class="btn" onclick="ivPrint()">Print / Save as PDF</button> <button class="btn" onclick="invPdf()">Download PDF</button> <span id="ivs" class="ok"></span></p></div></div><div id="sheet"></div>`;$('#app').insertAdjacentHTML('afterbegin',adminTabs());ivUpd()}
 function ivUpd(){V.rows.forEach((r,j)=>{const x=ivCalc(r),a=$('#ivx'+j);if(a){if(a.tagName==='INPUT'){if(document.activeElement!==a)a.value=f(x.tx)}else a.textContent=f(x.tx);$('#ivt'+j).textContent=f(x.tax);$('#ivz'+j).textContent=f(x.tt)}});window._inv=V;window._pt=ifile(V.no);$('#sheet').innerHTML=invHtml(V)}
@@ -374,7 +374,7 @@ function invPdf(){const el=document.querySelector('#sheet .inv'),d=window._inv;i
 async function ivSave(){V.no=(V.no||'').trim();if(!V.no)return alert('Enter the invoice number.');const id=ifile(V.no);
  const ex=await sb.from('exp_docs').select('payload').eq('id','inv_'+id).maybeSingle();if(ex.error)return alert('Could not save: '+ex.error.message);
  if(ex.data&&window._ie!==id){await loadInv();V.no=nextNo();$('#iv_no').value=V.no;ivUpd();return alert('That invoice number already exists. The next free number has been filled in; click Save again.')}
- const rows=V.rows.filter(r=>r.d||num(r.q)||num(r.c)).map(r=>({d:r.d,q:num(r.q),c:num(r.c),v:+r.v||0,x:((+r.v||0)===0&&r.x!==undefined&&r.x!==null&&r.x!=='')?num(r.x):''})),t=ivTot(rows),payload={no:V.no,date:V.date,trn:V.trn,cust:V.cust,ctrn:V.ctrn,rows,tx:t.tx,tax:t.tax,tt:t.tt,by:who(),at:Date.now()};
+ const rows=V.rows.filter(r=>r.d||num(r.q)||num(r.c)).map(r=>({d:r.d,q:num(r.q),c:num(r.c),v:+r.v||0,x:((+r.v||0)===0&&r.x!==undefined&&r.x!==null&&r.x!=='')?num(r.x):''})),t=ivTot(rows),payload={prep:V.prep||'Shabeeb',no:V.no,date:V.date,trn:V.trn,cust:V.cust,ctrn:V.ctrn,rows,tx:t.tx,tax:t.tax,tt:t.tt,by:who(),at:Date.now()};
  const {error}=await sb.from('exp_docs').upsert({id:'inv_'+id,payload});if(error)return alert('Could not save: '+error.message);invs[id]=payload;window._ie=id;$('#ivs').textContent='Saved \u2713 ('+id+')';afterAction()}
 function invList(){const L=Object.entries(invs).sort((a,b)=>noNum(b[1].no)-noNum(a[1].no)||(b[1].date>a[1].date?1:-1));
  $('#app').innerHTML=`<div class="noprint">${invSub()}</div><div class="card"><h2>DTC Invoices</h2><div class="sc"><table><tr><th>Invoice No.</th><th>Date</th><th>Customer</th><th>Total (AED)</th><th>Saved by</th><th></th></tr>${L.map(([id,d])=>`<tr><td>${esc(d.no)}</td><td>${dd2(d.date)}</td><td style="text-align:left">${esc(d.cust)}</td><td>${f(d.tt)}</td><td>${esc(d.by||'')}</td><td style="white-space:nowrap"><button class="btn" onclick="ivView('${id}')">View</button> <button class="btn" onclick="ivEdit('${id}')">Edit</button> <button class="btn" onclick="ivPrintId('${id}')">Print</button> <button class="btn" onclick="ivPdfId('${id}')">PDF</button> <button class="btn d" onclick="ivDel('${id}')">\u2715</button></td></tr>`).join('')||'<tr><td colspan="6" class="mu">No invoices saved yet.</td></tr>'}</table></div></div><div id="sheet"></div>`;$('#app').insertAdjacentHTML('afterbegin',adminTabs())}
@@ -436,9 +436,9 @@ async function boot(){isAdmin=['/admin','/asna','/shabeeb'].includes(location.pa
 /* ================= NAVIGATION: AMER / TAWJEEH THUMBNAILS ================= */
 document.head.insertAdjacentHTML('beforeend','<style>.nav .crumb{border:0;background:none;padding:2px 4px;font-weight:600;color:var(--ac);cursor:pointer;font:inherit}.nav .sep{color:var(--mu)}.nav .tb{border-radius:10px}</style>');
 const SECN={amer:'AMER',tawjeeh:'TAWJEEH'},SUBN={daily:'Daily Activity',monthly:'Monthly Activity',dtc:'DTC Invoice'},
- TABN={cb:'Cash Book',rp:'Reports',ex:'Daily Expense Sheet',ab:'Account Balance & Sales Report',vf:'Verification',me:'Monthly Expense Sheet',pl:'Profit & Loss',tc:'Cashbook',tr:'Reports',tb:'Closing Account Balance',tp:'Profit & Loss'},
+ TABN={cb:'Cash Book',rp:'Reports',ex:'Daily Expense Sheet',ab:'Account Balance & Sales Report',vf:'Verification',me:'Monthly Expense Sheet',pl:'Profit & Loss',tc:'Cashbook',tr:'Reports',tb:'Closing Account Balance',tp:'Profit & Loss',pr:'P&L Report',tq:'P&L Report'},
  userName=()=>CASH[view]||window._who||'Admin',bk=()=>CASH[view]?view:'asna';
-function tabsFor(S,B){if(S==='tawjeeh')return window._who==='Shabeeb'?['tc','tr','tb','tp']:['tc','tr'];if(B==='daily')return view==='thasleena'?['cb','rp','ex']:['cb','rp','ex','ab','vf'];if(B==='monthly')return['me','pl'];return[]}
+function tabsFor(S,B){if(S==='tawjeeh')return window._who==='Shabeeb'?['tc','tr','tb','tp','tq']:['tc','tr'];if(B==='daily')return view==='thasleena'?['cb','rp','ex']:['cb','rp','ex','ab','vf'];if(B==='monthly')return['me','pl','pr'];return[]}
 function go(S,B,T){window._sec=S||'';window._sub=B||'';window._tb=T||'';render()}
 const navInsert=()=>{if(view&&!$('#nb'))$('#app').insertAdjacentHTML('afterbegin',adminTabs())};
 function adminTabs(){const S=window._sec||'',B=window._sub||'',T=window._tb||'',cr=[[userName(),"go('','','')"]];
@@ -470,20 +470,20 @@ function render(){window._corr=null;renderNav();setHeader();
  if(S==='amer'&&B==='dtc'&&view!=='admin')B='';
  if(S==='amer'&&B==='monthly'&&!isAdmin)B='';
  if(S==='amer'&&B==='daily'&&!tabsFor('amer','daily').includes(T))T='cb';
- if(S==='amer'&&B==='monthly'&&!['me','pl'].includes(T))T='me';
+ if(S==='amer'&&B==='monthly'&&!['me','pl','pr'].includes(T))T='me';
  if(S==='tawjeeh'&&!tabsFor('tawjeeh','').includes(T))T='tc';
  window._sec=S;window._sub=B;window._tb=T;
  if(!S)thumbs('');else if(S==='amer'&&!B)thumbs('amer');
  else if(S==='amer'&&B==='daily'){if(T==='cb')entry(bk());else if(T==='rp')report(bk());else if(T==='ex')expDay();else if(T==='ab')adminBal();else adminFlow()}
- else if(S==='amer'&&B==='monthly'){if(T==='pl')plView();else adminExp()}
+ else if(S==='amer'&&B==='monthly'){if(T==='pl')plView();else if(T==='pr')plRepView('amer');else adminExp()}
  else if(S==='amer'&&B==='dtc'){if(window._ivm==='list')invList();else invForm()}
- else if(S==='tawjeeh'){if(T==='tr')tlReport();else if(T==='tb')tcbView();else if(T==='tp')plView('tj');else tlEntry()}
+ else if(S==='tawjeeh'){if(T==='tr')tlReport();else if(T==='tb')tcbView();else if(T==='tp')plView('tj');else if(T==='tq')plRepView('tj');else tlEntry()}
  navInsert()}
 async function autoRefresh(){if(document.hidden||window._corr||!view)return;try{await loadDays();const sh=$('#sheet'),open=sh&&sh.innerHTML,S=window._sec||'',B=window._sub||'',T=window._tb||'';
  if(S==='amer'&&B==='daily'){if(T==='cb'){if(!eDirty&&$('#dt')&&!$('#dt').disabled){const sv=$('#sv').textContent;load(window._ec);$('#sv').textContent=sv}}else if(T==='rp'){if(!open)rp(bk())}else if(T==='ex'){if(!xDirty)xLoad()}else if(T==='ab'){if(!bDirty&&!open)bLoad()}else if(T==='vf'){if(!open)ad()}}
- else if(S==='amer'&&B==='monthly'){if(T==='pl'){if(!pDirty&&!open)plLoad()}else if(!mDirty&&!open)mLoad()}
+ else if(S==='amer'&&B==='monthly'){if(T==='pl'){if(!pDirty&&!open)plLoad()}else if(T==='pr'){if(!open)plRepLoad()}else if(!mDirty&&!open)mLoad()}
  else if(S==='amer'&&B==='dtc'){await loadInv();if(window._ivm==='list'&&!open)render()}
- else if(S==='tawjeeh'){await loadT();if(T==='tr'){if(!open)tlRp()}else if(T==='tb'){if(!cDirty&&!open)tcbLoad()}else if(T==='tp'){if(!pDirty&&!open)plLoad()}else if(!tDirty&&$('#tdt')){const sv=$('#tsv').textContent;tlLoad();$('#tsv').textContent=sv}}
+ else if(S==='tawjeeh'){await loadT();if(T==='tr'){if(!open)tlRp()}else if(T==='tb'){if(!cDirty&&!open)tcbLoad()}else if(T==='tp'){if(!pDirty&&!open)plLoad()}else if(T==='tq'){if(!open)plRepLoad()}else if(!tDirty&&$('#tdt')){const sv=$('#tsv').textContent;tlLoad();$('#tsv').textContent=sv}}
  $('#rf').textContent='Auto-refresh every 30 s \u00b7 last updated '+new Date().toLocaleTimeString('en-GB')}catch(e){}}
 /* ================= PROFIT & LOSS (AMER monthly + Tawjeeh for Shabeeb) ================= */
 let P=null,pDirty=false;
@@ -549,6 +549,29 @@ function tcbPrint(){const R=TB.rows.filter(r=>(r.n||'').trim());
  $('#sheet').innerHTML=`<div class="pr">${TLH}<div class="tt">CLOSING ACCOUNT BALANCE</div><p style="text-align:center;margin:0 0 10px;font-weight:700;font-size:13px">${dlab(TB.date)}</p><table><tr><th style="text-align:center">Bank</th><th style="width:30px">:</th><th style="text-align:center">Balance</th></tr>${R.map((r,i)=>`<tr${i%2?' class="alt"':''}><td style="text-align:center">${esc(r.n)}</td><td style="text-align:center">:</td><td style="text-align:center">${r.a===''||r.a==null?'':'AED '+f(r.a)}${r.t?' ( '+esc(r.t)+' )':''}</td></tr>`).join('')}</table>${SIG1(TB.by||who())}</div>`;
  window._pt='Tawjeeh Closing Account Balance '+dfn(TB.date);printSheet()}
 async function tcbCsv(){const t=[['Bank','Balance (AED)','Note'],...TB.rows.filter(r=>(r.n||'').trim()).map(r=>[r.n,r.a===''?'':num(r.a),r.t||''])].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');await dl.save({filename:'Tawjeeh Closing Account Balance '+dfn(TB.date)+'.csv',data:t})}
+
+/* ================= PROFIT & LOSS REPORT (all saved periods) ================= */
+let PR=null;
+const plTitleC=m=>{const [y,mo]=m.split('-');return MN[mo-1]+' '+y},
+ plRepRows=()=>{const y=$('#py').value;return PR.rows.filter(x=>y==='all'||x.m.startsWith(y))},
+ plSum=R=>R.reduce((a,x)=>({ts:a.ts+x.ts,inc:a.inc+x.inc,ex:a.ex+x.ex,ret:a.ret+x.ret}),{ts:0,inc:0,ex:0,ret:0});
+function plRepView(k){window._plk=k;
+ $('#app').innerHTML=`<div class="card"><h2>${k==='tj'?'Tawjeeh \u00b7 ':''}Profit &amp; Loss Report</h2><div class="ctl noprint"><div><label>Year</label><select id="py" onchange="plRepDraw()"></select></div><button class="btn p" onclick="plRepPrint()">Print Report</button><button class="btn" onclick="plRepCsv()">Download CSV</button><button class="btn" onclick="plRepLoad()">Refresh</button><span id="prs" class="mu"></span></div><div id="prb"></div></div><div id="sheet"></div>`;plRepLoad()}
+async function plRepLoad(){const k=window._plk||'amer',pre=k==='tj'?'tpl_':'pl_',r=await sb.from('exp_docs').select('id,payload').like('id',pre+'%').order('id',{ascending:true});
+ if(r.error){$('#prs').textContent='Could not load: '+r.error.message;return}
+ PR={k,rows:(r.data||[]).filter(x=>x.payload&&x.payload.exp).map(x=>{const p=x.payload,i=num(p.ts)-num(p.td)-num(p.tc),e=p.exp.reduce((a,v)=>a+num(v.a),0);return {m:x.id.slice(pre.length),ts:num(p.ts),inc:i,ex:e,ret:i-e,by:p.by}})};
+ const ys=[...new Set(PR.rows.map(x=>x.m.slice(0,4)))].sort().reverse(),sel=$('#py'),cur=sel.value||'all';
+ sel.innerHTML='<option value="all">All periods</option>'+ys.map(y=>`<option>${y}</option>`).join('');sel.value=(ys.includes(cur)||cur==='all')?cur:'all';
+ plRepDraw();$('#prs').textContent='Based on the saved Profit & Loss statements. Click a row to open it.'}
+function plRepDraw(){const R=plRepRows(),T=plSum(R),rc=n=>`style="text-align:right;font-weight:700;color:${n<0?'#c0262f':'#0a7a3d'}"`;
+ $('#prb').innerHTML=`<div class="sc"><table><tr><th>Period</th><th>Date period</th><th>Total Sales</th><th>Total Income</th><th>Total Expense</th><th>Calculated Return</th><th>Saved by</th></tr>${R.map(x=>`<tr style="cursor:pointer" onclick="plOpen('${x.m}')"><td>${plTitleC(x.m)}</td><td>${plPeriod(x.m)}</td><td>${f(x.ts)}</td><td>${f(x.inc)}</td><td>${f(x.ex)}</td><td ${rc(x.ret)}>${f(x.ret)}</td><td>${esc(x.by||'')}</td></tr>`).join('')||'<tr><td colspan="7" class="mu">No saved Profit &amp; Loss statements yet.</td></tr>'}<tr><th>Total</th><th></th><th>${f(T.ts)}</th><th>${f(T.inc)}</th><th>${f(T.ex)}</th><th>${f(T.ret)}</th><th></th></tr></table></div>`}
+function plOpen(m){window._pm=m;if(window._plk==='tj')go('tawjeeh','','tp');else go('amer','monthly','pl')}
+function plRepPrint(){const R=plRepRows(),T=plSum(R),k=PR.k,y=$('#py').value,col=n=>n<0?'#b3202a':'#1d5a14';
+ $('#sheet').innerHTML=`<div class="pr">${k==='tj'?TLH:LH}<div class="tt">PROFIT &amp; LOSS REPORT</div><div class="mt"><div><small>Business</small><b>${k==='tj'?'Tawjeeh':'Amer'}</b></div><div><small>Year</small><b>${y==='all'?'All periods':y}</b></div><div><small>Periods</small><b>${R.length}</b></div><div><small>Net return (AED)</small><b style="color:${col(T.ret)}">${f(T.ret)}</b></div></div>
+<table><tr><th>Period</th><th>Date period</th><th>Total Sales</th><th>Total Income</th><th>Total Expense</th><th>Calculated Return</th></tr>${R.map(x=>`<tr><td>${plTitleC(x.m)}</td><td style="font-size:10px">${plPeriod(x.m)}</td><td>${f(x.ts)}</td><td>${f(x.inc)}</td><td>${f(x.ex)}</td><td style="font-weight:700;color:${col(x.ret)}">${f(x.ret)}</td></tr>`).join('')}<tr class="tot"><td>Total</td><td></td><td>${f(T.ts)}</td><td>${f(T.inc)}</td><td>${f(T.ex)}</td><td style="color:${col(T.ret)}">${f(T.ret)}</td></tr></table>${SIG1(who())}</div>`;
+ window._pt=(k==='tj'?'Tawjeeh ':'')+'Profit & Loss Report '+(y==='all'?'All Periods':y);printSheet()}
+async function plRepCsv(){const R=plRepRows(),y=$('#py').value,t=[['Period','Date period','Total Sales','Total Income','Total Expense','Calculated Return'],...R.map(x=>[plTitleC(x.m),plPeriod(x.m),x.ts,x.inc,x.ex,x.ret])].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+ await dl.save({filename:(PR.k==='tj'?'Tawjeeh ':'')+'Profit & Loss Report '+(y==='all'?'All Periods':y)+'.csv',data:t})}
 
 boot();
 </script></body></html>
