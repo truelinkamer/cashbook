@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>True Link Cash Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
 :root{--bg:#f3f5f4;--card:#fff;--tx:#1c2321;--mu:#66736e;--bd:#dfe5e2;--ac:#0f6b44;--ac2:#b3202a;--hd:#eef3f0;--in:#fafcfb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121615;--card:#1b211f;--tx:#e8eeeb;--mu:#93a19b;--bd:#2d3733;--ac:#3fbf86;--ac2:#ef6b73;--hd:#232b28;--in:#161b19}}
 :root[data-theme="dark"]{--bg:#121615;--card:#1b211f;--tx:#e8eeeb;--mu:#93a19b;--bd:#2d3733;--ac:#3fbf86;--ac2:#ef6b73;--hd:#232b28;--in:#161b19}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:13.5px/1.45 "Century Gothic",CenturyGothic,AppleGothic,Questrial,"Segoe UI",Arial,sans-serif}
 .w{max-width:1100px;margin:0 auto;padding:14px}
 .hd{background:var(--card);border:1px solid var(--bd);border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;text-align:center}
 .hd img{height:64px;max-width:25%;object-fit:contain}.hd small{letter-spacing:.18em;font-size:11px;color:var(--mu);text-transform:uppercase}
@@ -75,7 +76,7 @@ async function save(p,sub){if(!col)return alert('Not connected to the database.'
 async function del(){const d=$('#dt').value,id=window._ec+'_'+d;if(!days[id])return;if(!confirm('Delete the entry for '+dmy(d)+'?'))return;try{const {error}=await sb.from('cash_days').delete().eq('id',id);if(error)throw error;delete days[id];load(window._ec);afterAction()}catch(e){alert('Could not delete: '+(e.message||e.code))}}
 function printSheet(){const t0=document.title;if(window._pt)document.title=window._pt;document.body.classList.add('ps');psPrepare();try{print()}catch(e){alert('Printing is blocked in this view. Use Download sheet, then print the file.')}setTimeout(()=>{document.body.classList.remove('ps');psClear();document.title=t0;afterAction()},1500)}
 async function dlSheet(){if(!dl)return alert('Download not available here.');const el=$('#sheet').cloneNode(true);el.querySelectorAll('.noprint').forEach(x=>x.remove());
- const h=`<!DOCTYPE html><meta charset=utf-8><title>Cash Book ${_sd.date}</title><style>${PRCSS}body{margin:16px;background:#fff}.pr{border:0}@page{size:A4;margin:10mm}</style>${el.innerHTML.replace(/src="\//g,'src="'+location.origin+'/')}`;
+ const h=`<!DOCTYPE html><meta charset=utf-8><title>Cash Book ${_sd.date}</title><style>body{font-family:'Century Gothic',CenturyGothic,AppleGothic,Questrial,'Segoe UI',Arial,sans-serif}${PRCSS}body{margin:16px;background:#fff}.pr{border:0}@page{size:A4;margin:10mm}</style>${el.innerHTML.replace(/src="\//g,'src="'+location.origin+'/')}`;
  try{await dl.save({filename:(window._pt||'Cashbook')+'.html',data:h})}catch(e){}}
 function printReport(c){const m=$('#mo').value,L=list(c).filter(d=>d.date.startsWith(m));if(!L.length)return alert('No entries this month.');
  const oo=i=>L.reduce((a,d)=>a+d.out[i],0),S=k=>L.reduce((a,d)=>a+d[k],0),mn=new Date(m+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'}),vf=L.filter(d=>d.verifiedBy).length;
@@ -88,7 +89,7 @@ function printReport(c){const m=$('#mo').value,L=list(c).filter(d=>d.date.starts
  const st=document.createElement('style');st.textContent='@page{size:A4 landscape;margin:8mm}';document.head.appendChild(st);document.body.classList.add('ps');psPrepare();
  const t0=document.title;document.title=CASH[c]+' Cashbook Report '+mn;try{print()}catch(e){alert('Printing is blocked in this view.')}setTimeout(()=>{document.body.classList.remove('ps');psClear();st.remove();document.title=t0;afterAction()},1500)}
 /* ---------- REPORT ---------- */
-function rowsOf(d){return `<tr><td>${dmy(d.date)}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td>${d.out.map(v=>`<td>${f(v)}</td>`).join('')}<td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${diffCell(d)}</td><td>${esc(d.preparedBy||CASH[d.cashier])}</td><td>${d.verifiedBy?esc(d.verifiedBy):(isSub(d)?('<span class="mu">Pending'+(d.submitted>1?'<br><small>'+fdt(d.submitted)+'</small>':'')+'</span>'):'<span style="color:#b3202a">Draft</span>')}</td><td>${vrCell(d)}</td><td>${d.verifiedBy?`<button class="btn" onclick="event.stopPropagation();sheet(days['${d.cashier}_${d.date}']);setTimeout(printSheet,300)">Print</button>`:'<span class="mu">—</span>'}</td></tr>`}
+function rowsOf(d){return `<tr><td>${dmy(d.date)}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td>${d.out.map(v=>`<td>${f(v)}</td>`).join('')}<td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${diffCell(d)}</td><td>${esc(d.preparedBy||CASH[d.cashier])}</td><td>${d.verifiedBy?esc(d.verifiedBy):(isSub(d)?'<span class="mu">Pending</span>':'<span style="color:#b3202a">Draft</span>')}</td><td>${vrCell(d)}</td><td>${d.verifiedBy?`<button class="btn" onclick="event.stopPropagation();sheet(days['${d.cashier}_${d.date}']);setTimeout(printSheet,300)">Print</button>`:'<span class="mu">—</span>'}</td></tr>`}
 const HEAD=c=>`<tr><th>Date</th><th>Opening</th><th>Closing</th>${OUTK.map(t=>`<th>${t}</th>`).join('')}<th>Total Received</th><th>Collection</th><th>ERP Diff</th><th>Prepared By</th><th>Verified</th><th>Verifier Remarks</th><th>Print</th></tr>`;
 function report(c){const m=window._m||today().slice(0,7);
  $('#app').innerHTML=`<div class="card"><h2>${CASH[c]} · Reports</h2><div class="ctl noprint"><div><label>Month</label><input type="month" id="mo" value="${m}"></div><button class="btn" onclick="csv('${c}')">Download CSV</button><button class="btn" onclick="printReport('${c}')">Print Report</button></div><div id="rp"></div></div><div id="sheet"></div>`;
@@ -97,7 +98,7 @@ function rp(c){const m=$('#mo').value,L=list(c).filter(d=>d.date.startsWith(m));
  const s=k=>L.reduce((a,d)=>a+(k==='o'?0:d[k]),0),oo=i=>L.reduce((a,d)=>a+d.out[i],0);
  $('#rp').innerHTML=recentBox(c)+(L.length?`<div class="sc"><table>${HEAD(c)}${L.slice().reverse().map(rowsOf).join('')}<tr><th>Total</th><th></th><th></th>${[0,1,2,3,4].map(i=>`<th>${f(oo(i))}</th>`).join('')}<th>${f(s('received'))}</th><th>${f(s('collection'))}</th><th></th><th></th><th></th><th></th><th></th></tr></table></div><p class="mu noprint">Click a date to view the day sheet.</p>`:'<p class="mu">No entries for this month.</p>');
  const Lr=L.slice().reverse();$('#rp').querySelectorAll('tr').forEach((r,i)=>{const d=Lr[i-1];if(d){r.style.cursor='pointer';r.onclick=()=>sheet(d)}});$('#sheet').innerHTML=''}
-const PRCSS=`.pr{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial,Helvetica,sans-serif;padding:18px 22px;border:1px solid #d5dcd8;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+const PRCSS=`.pr{background:#fff;color:#1b1f1d;font:11.5px/1.45 "Century Gothic",CenturyGothic,AppleGothic,Questrial,"Segoe UI",Arial,sans-serif;padding:18px 22px;border:1px solid #d5dcd8;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .pr *{box-sizing:border-box}.pr tr{page-break-inside:avoid}
 .pr .lh{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:center;padding-bottom:10px;border-bottom:3px double #0f6b44}.pr .lh img{height:56px;max-width:20%;object-fit:contain}
 .pr .lh h1{margin:0;font-size:17px;letter-spacing:.04em;color:#111}.pr .lh small{color:#5b6761;letter-spacing:.14em;text-transform:uppercase;font-size:10px}
@@ -111,13 +112,13 @@ const PRCSS=`.pr{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial,H
 .pr .sg{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:40px}.pr .sig{display:block;border:0;border-bottom:1px solid #1b1f1d;padding:0 4px 2px;font:italic 22px "Segoe Script","Brush Script MT",cursive;min-height:32px;color:#1b1f1d;min-width:0}
 .pr .sg small{color:#5b6761;display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
 .pr .ft{margin-top:16px;border-top:1px solid #c9d1cc;padding-top:6px;color:#6b7771;font-size:9.5px;display:flex;justify-content:space-between}
-.pr.rt th,.pr.rt td{padding:3px 4px;font-size:10px}.pr.rt td:last-child{text-align:left}
+.pr.rt th,.pr.rt td{padding:3px 4px;font-size:9px}.pr.rt td:last-child{text-align:left}
 .pr .bn{background:#eef4f6;border:1px solid #b9cfd6;border-left:6px solid #2a7aa8;font-size:16px;font-weight:700;padding:8px 12px;margin:12px 0 4px;color:#1b1f1d}
 .pr .mm{margin-bottom:14px}.pr .mm .mh{background:#f6d9b4;text-align:center;font-weight:700;font-size:13px;color:#1b1f1d}
 .pr .mm .gh th{background:#e4e8e6;color:#1b1f1d;text-transform:none;font-size:12px;text-align:center;letter-spacing:0}.pr .mm td:nth-child(2){text-align:left}.pr .mm td:first-child{text-align:center}
 .pr .mm .gt td{background:#e4e8e6;font-weight:700;color:#b3202a;border-top:2px solid #6b7771}
 .pr .sm{width:62%;margin:0 auto 14px}.pr .sm td:first-child{text-align:center;font-weight:700}.pr .sm td:last-child{color:#b3202a;font-weight:700;text-align:center}.pr .sm .gt td:first-child{color:#1b1f1d}
-.pr .plh{text-align:center;font:600 22px Georgia,"Times New Roman",serif;color:#1b1f1d;margin:16px 0 4px;letter-spacing:.01em}.pr .plh small{display:block;font:600 11px "Segoe UI",Arial,sans-serif;letter-spacing:.3em;color:#0f6b44;margin-top:4px}
+.pr .plh{text-align:center;font:600 20px "Century Gothic",CenturyGothic,AppleGothic,Questrial,"Segoe UI",Arial,sans-serif;color:#1b1f1d;margin:16px 0 4px;letter-spacing:.01em}.pr .plh small{display:block;font:600 10.5px "Century Gothic",CenturyGothic,AppleGothic,Questrial,"Segoe UI",Arial,sans-serif;letter-spacing:.3em;color:#0f6b44;margin-top:4px}
 .pr .pcur{text-align:right;font-size:10px;color:#6b7771;margin:6px 2px 4px;font-style:italic}
 .pr .pl{width:100%;border-collapse:collapse;border:1px solid #cfd8d3;margin:0 0 14px}
 .pr .pl td{border:0;border-bottom:1px solid #e6ebe8;padding:7px 14px;font-size:12.5px;background:#fff;color:#1b1f1d}
@@ -312,7 +313,7 @@ function setHeader(){const on=(!!CASH[view]&&(tab==='tl'||tab==='tlr'))||((view=
 /* ---------- SUBMIT / DTC INVOICE ---------- */
 const afterAction=()=>setTimeout(autoRefresh,500),isSub=d=>d.submitted===undefined||!!d.submitted;
 function submitDay(){if(!confirm('Submit this cash book for verification?\nOnce submitted it goes to the verifier. If you change it later you must submit it again.'))return;save(0,1)}
-const INVCSS=`.inv{background:#fff;color:#1b1f1d;font:12px/1.45 "Segoe UI",Arial,Helvetica,sans-serif;padding:20px 24px;width:100%;max-width:800px;margin:0 auto;border:1px solid #d5dcd8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+const INVCSS=`.inv{background:#fff;color:#1b1f1d;font:11.5px/1.45 "Century Gothic",CenturyGothic,AppleGothic,Questrial,"Segoe UI",Arial,sans-serif;padding:20px 24px;width:100%;max-width:800px;margin:0 auto;border:1px solid #d5dcd8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .inv *{box-sizing:border-box}.inv .ih{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:3px double #2a7aa8}.inv .ih img{height:64px;max-width:20%;object-fit:contain}
 .inv .ic{text-align:center;flex:1}.inv .ic b{display:block;font-size:15px;letter-spacing:.03em}.inv .ic span{display:block;font-size:14px;margin-top:3px;color:#333}
 .inv .it{text-align:center;font-weight:800;font-size:22px;letter-spacing:.3em;color:#2a7aa8;margin:20px 0 14px}.inv .it:after{content:"";display:block;width:90px;height:3px;background:#2a7aa8;margin:8px auto 0}
@@ -421,7 +422,7 @@ function ad(){if(!$('#f1'))return;if(window._tAuto!==false&&$('#t1').value!==tod
   $('#ad').innerHTML=`<div class="g g4" style="margin-bottom:14px">${kp('Total cash received',S('received'))}${kp("Collection (received − opening)",S('collection'))}${kp('Total handed over / paid',S('outTotal'),'#b3202a')}<div class="k" style="border-left-color:#b3202a"><span>Pending verification</span><b>${L.filter(d=>!d.verifiedBy).length}</b></div>${kp('Asna closing (latest)',last('asna'),'#222')}${kp('Thasleena closing (latest)',last('thasleena'),'#222')}</div>
  <div class="g g2"><div class="card"><h2>Where the cash went</h2>${OUTK.map((t,i)=>`<div class="row"><span>${t}</span><b>${f(O(i))}</b></div>`).join('')}</div>
  </div>
- ${pendingCard()}<div class="card"><h2>All entries</h2><div class="sc"><table><tr><th>Date</th><th>Cashier</th><th>Opening</th><th>Closing</th><th>Handed over / paid</th><th>Total received</th><th>Collection</th><th>ERP Diff</th><th>Submitted</th><th>Verification</th></tr>${L.slice().reverse().map(d=>`<tr><td>${dmy(d.date)}</td><td style="text-align:left">${CASH[d.cashier]}${d.preparedBy&&d.preparedBy!==CASH[d.cashier]?' ('+esc(d.preparedBy)+')':''}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td><td>${f(d.outTotal)}</td><td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${diffCell(d)}</td><td>${d.submitted>1?fdt(d.submitted):'—'}</td><td style="white-space:nowrap">${vcell(d)}</td></tr>`).join('')||'<tr><td colspan="10" class="mu">No entries.</td></tr>'}</table></div></div><div id="sheet"></div>`}
+ ${pendingCard()}<div class="card"><h2>All entries</h2><div class="sc"><table><tr><th>Date</th><th>Cashier</th><th>Opening</th><th>Closing</th><th>Handed over / paid</th><th>Total received</th><th>Collection</th><th>ERP Diff</th><th>Verification</th></tr>${L.slice().reverse().map(d=>`<tr><td>${dmy(d.date)}</td><td style="text-align:left">${CASH[d.cashier]}${d.preparedBy&&d.preparedBy!==CASH[d.cashier]?' ('+esc(d.preparedBy)+')':''}</td><td>${f(d.opening)}</td><td>${f(d.closing)}</td><td>${f(d.outTotal)}</td><td><b>${f(d.received)}</b></td><td>${f(d.collection)}</td><td>${diffCell(d)}</td><td style="white-space:nowrap">${vcell(d)}</td></tr>`).join('')||'<tr><td colspan="9" class="mu">No entries.</td></tr>'}</table></div></div><div id="sheet"></div>`}
 /* ---------- INIT ---------- */
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const dl={save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/plain'}));a.download=filename;a.click()}};
@@ -571,7 +572,7 @@ async function plRepCsv(){const R=plRepRows(),y=$('#py').value,t=[['Period','Dat
 const fdt=t=>{const x=new Date(t);return x.toLocaleDateString('en-GB')+' '+x.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})},
  recentBox=c=>{const lt=list(c).pop();return lt?`<div class="k" style="margin-bottom:10px;max-width:420px"><span>Recent cash closing \u00b7 ${dmy(lt.date)}</span><b>AED ${f(lt.closing)}</b></div>`:''},
  recentBoxT=()=>{const lt=Object.values(tdays).sort((a,b)=>a.date<b.date?-1:1).pop();return lt?`<div class="k" style="margin-bottom:10px;max-width:420px"><span>Recent cash closing \u00b7 ${dmy(lt.date)}</span><b>AED ${f(lt.closing)}</b></div>`:''},
- pendingCard=()=>{const pend=list('').filter(d=>isSub(d)&&!d.verifiedBy);return pend.length?`<div class="card" style="border-left:4px solid #b3202a"><h2>Waiting for verification (${pend.length})</h2><div class="sc"><table><tr><th>Date</th><th>Cashier</th><th>Closing</th><th>Submitted</th><th>Verification</th></tr>${pend.slice().reverse().map(d=>`<tr><td>${dmy(d.date)}</td><td style="text-align:left">${CASH[d.cashier]}${d.preparedBy&&d.preparedBy!==CASH[d.cashier]?' ('+esc(d.preparedBy)+')':''}</td><td>${f(d.closing)}</td><td>${d.submitted>1?fdt(d.submitted):'\u2014'}</td><td style="white-space:nowrap">${vcell(d)}</td></tr>`).join('')}</table></div></div>`:''};
+ pendingCard=()=>{const pend=list('').filter(d=>isSub(d)&&!d.verifiedBy);return pend.length?`<div class="card" style="border-left:4px solid #b3202a"><h2>Waiting for verification (${pend.length})</h2><div class="sc"><table><tr><th>Date</th><th>Cashier</th><th>Closing</th><th>Verification</th></tr>${pend.slice().reverse().map(d=>`<tr><td>${dmy(d.date)}</td><td style="text-align:left">${CASH[d.cashier]}${d.preparedBy&&d.preparedBy!==CASH[d.cashier]?' ('+esc(d.preparedBy)+')':''}</td><td>${f(d.closing)}</td><td style="white-space:nowrap">${vcell(d)}</td></tr>`).join('')}</table></div></div>`:''};
 async function printDay(){const id=window._ec+'_'+$('#dt').value;
  if(eDirty)return alert('You have unsaved changes. Please Save and Submit for Verification again before printing.');
  await loadDays();const d=days[id];
